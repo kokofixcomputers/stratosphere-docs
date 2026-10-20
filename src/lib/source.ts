@@ -1,4 +1,4 @@
-import { docs, extensions } from '@/.source';
+import { docs } from '@/.source';
 import { loader } from 'fumadocs-core/source';
 import { createElement } from 'react';
 import { icons } from 'lucide-react';
@@ -27,16 +27,5 @@ function icon(icon: string | undefined) {
 export const source = loader({
   baseUrl: '/docs',
   source: docs.toFumadocsSource(),
-  icon,
-});
-
-/**
- * Extension authoring lives at `/docs/extensions`, with a sidebar of its own.
- * Slugs are generated from `content/extensions`, so the base URL carries the
- * whole prefix and `index` becomes `/docs/extensions` rather than a nested page.
- */
-export const extensionsSource = loader({
-  baseUrl: '/docs/extensions',
-  source: extensions.toFumadocsSource(),
   icon,
 });
