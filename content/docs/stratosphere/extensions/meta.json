@@ -1,0 +1,6 @@
+{
+  "title": "Extensions",
+  "description": "Build an extension for Stratosphere",
+  "icon": "Puzzle",
+  "pages": ["index", "first-extension", "manifest", "php-api", "browser-api", "hooks", "routes", "building", "example", "troubleshooting"]
+}

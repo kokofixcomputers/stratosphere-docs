@@ -1,0 +1,224 @@
+---
+title: The manifest
+description: Every field of extension.json, and what it is checked against.
+---
+
+`extension.json` is read when the extension is installed and again every time it is started, so everything in
+it is validated rather than trusted. A manifest the installer rejects is never installed; one that fails to
+load later is reported on the Extensions page.
+
+## The whole file
+
+```json
+{
+  "api": 1,
+  "id": "my-extension",
+  "name": "My Extension",
+  "version": "1.0.0",
+  "description": "What it does, in one line.",
+  "author": "You",
+  "homepage": "https://example.com/my-extension",
+  "license": "MIT",
+  "php": {
+    "main": "Vendor\\Name\\Main",
+    "autoload": { "Vendor\\Name\\": "src/" }
+  },
+  "web": {
+    "scripts": ["web/index.js"],
+    "styles": ["web/style.css"]
+  },
+  "migrations": "database/migrations",
+  "settings": [
+    { "key": "greeting", "label": "Greeting", "type": "text", "default": "Hello", "max_length": 80 }
+  ]
+}
+```
+
+## Fields
+
+<TypeTable
+  type={{
+    api: {
+      description: 'The version of the extension API this extension was written for. Must be `1`.',
+      type: 'number',
+      required: true,
+    },
+    id: {
+      description: 'Lowercase letters, digits and hyphens. 3 to 48 characters, and it must start and end with a letter or a digit. Never change it: settings, stored data and routes are all filed under this id.',
+      type: 'string',
+      required: true,
+    },
+    name: {
+      description: 'What admins see. Up to 100 characters.',
+      type: 'string',
+      required: true,
+    },
+    version: {
+      description: '`x.y.z`, optionally with a pre-release or build suffix (`1.0.0-beta.1`). Shown to admins, and used as the cache-buster on the extension\'s script and style URLs.',
+      type: 'string',
+      required: true,
+    },
+    description: {
+      description: 'One line, up to 500 characters.',
+      type: 'string',
+    },
+    author: { description: 'Up to 100 characters.', type: 'string' },
+    homepage: { description: 'A full URL, up to 200 characters.', type: 'string' },
+    license: { description: 'An SPDX identifier, up to 60 characters.', type: 'string' },
+    php: {
+      description: 'The PHP side. Omit it for an extension that only runs in the browser.',
+      type: 'object',
+    },
+    web: { description: 'The browser side.', type: 'object' },
+    migrations: {
+      description: 'A folder inside the extension holding migrations the installer runs.',
+      type: 'string',
+    },
+    settings: {
+      description: 'Fields an admin fills in. Up to 50 of them.',
+      type: 'array',
+    },
+  }}
+/>
+
+### `php`
+
+<TypeTable
+  type={{
+    'php.main': {
+      description: 'The class the panel starts. It must extend `Pterodactyl\\Extensions\\Extension`. Setting it requires `php.autoload`.',
+      type: 'string',
+    },
+    'php.autoload': {
+      description: 'Namespace prefix to folder, the way Composer maps them. Up to 10 entries. The prefix must end in `\\` and the folder must be inside the extension.',
+      type: 'object',
+    },
+  }}
+/>
+
+```json
+"php": {
+  "main": "Stratosphere\\MyExtension\\Main",
+  "autoload": {
+    "Stratosphere\\MyExtension\\": "src/"
+  }
+}
+```
+
+### `web`
+
+`web.scripts` and `web.styles` list the files to load, as paths below `web/` — up to 10 each. The panel refuses
+anything that is not `web/<something>.js` (or `.css`), so a file cannot point outside the extension's own
+folder. Files that are not listed are never loaded, even if they are inside `web/`.
+
+```json
+"web": {
+  "scripts": ["web/index.js", "web/editor.js"],
+  "styles": ["web/style.css"]
+}
+```
+
+They are loaded on every page while the extension is on, after the panel has started, so
+`window.Stratosphere` is already there. Each URL carries `?v=<version>`, which is why bumping the version is
+what makes browsers pick up a changed file.
+
+## Settings
+
+Settings are stored for you: the panel renders a form for them under **Admin → Extensions**, applies each
+`default` when the admin has not set anything, and hands the values to your PHP through
+`$this->context->setting('key')`.
+
+This is the full shape of one setting:
+
+```json
+{
+  "key": "greeting",
+  "label": "Greeting",
+  "type": "text",
+  "default": "Hello",
+  "help": "Shown to players when they join.",
+  "max_length": 80
+}
+```
+
+<TypeTable
+  type={{
+    key: {
+      description: 'Lowercase letters, digits and underscores, starting with a letter, up to 40 characters. Must be unique within the extension.',
+      type: 'string',
+      required: true,
+    },
+    label: { description: 'The field label. Up to 100 characters.', type: 'string', required: true },
+    type: {
+      description: 'One of `text`, `textarea`, `number`, `boolean`, `select`, `password`.',
+      type: 'string',
+      required: true,
+    },
+    default: {
+      description: 'Used until an admin sets something. Defaults to `false` for `boolean`, `0` for `number`, and an empty string otherwise.',
+      type: 'any',
+    },
+    help: { description: 'Help text under the field. Up to 500 characters.', type: 'string' },
+  }}
+/>
+
+### The types
+
+<TypeTable
+  type={{
+    text: { description: 'A single line. Takes `max_length`.', type: 'string' },
+    textarea: { description: 'Several lines. Takes `rows` and `max_length`.', type: 'string' },
+    number: { description: 'A number. Takes `min` and `max`.', type: 'number' },
+    boolean: { description: 'A switch. Stored as `true` or `false`.', type: 'boolean' },
+    select: {
+      description: 'A dropdown. Requires `options`, either a list `["a", "b"]` or a map `{"a": "Label A"}`.',
+      type: 'string',
+    },
+    password: { description: 'Like `text`, but the value is not shown back. Use it for a token or a secret.', type: 'string' },
+  }}
+/>
+
+Rules the installer enforces, on top of the per-field checks:
+
+- A `select` without `options` is rejected.
+- Two settings with the same `key` are rejected.
+- More than 50 settings are rejected.
+
+<Callout type="info">
+  A `password` setting is hidden in the interface but is not encrypted at rest — it is a setting like any
+  other. Do not use one where a value must not be readable by anyone with database access.
+</Callout>
+
+## Migrations
+
+If a key/value store is not enough, ship your own tables. Name the folder in the manifest and the installer
+runs everything in it:
+
+```json
+"migrations": "database/migrations"
+```
+
+The folder must be inside the extension, and nothing runs `down()` — the panel only ever migrates forward. When
+the extension is removed *and* purged, its tables are yours to drop through a migration the admin runs, so
+prefer the [store](/docs/stratosphere/extensions/php-api#the-store) when it will do.
+
+## What is rejected
+
+These are refused, because they would let an extension reach outside its own folder:
+
+- A `web.scripts` or `web.styles` entry that is not `web/<file>.js` (or `.css`).
+- A path that is absolute, contains `\`, contains a null byte, or contains a `..` segment.
+- A `php.main` class name that is not a plain namespaced class name.
+- A `php.autoload` prefix that does not end in `\`.
+- `php.main` without `php.autoload`.
+
+## Next
+
+<Cards>
+  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+    Everything $this->context gives the class named by php.main
+  </Card>
+  <Card title="Building and packaging" href="/docs/stratosphere/extensions/building">
+    How extension.json gets checked before the .stratext is built
+  </Card>
+</Cards>

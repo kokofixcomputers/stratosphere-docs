@@ -1,0 +1,116 @@
+---
+title: Your first extension
+description: Start from the template and have something working.
+---
+
+The panel ships a template and a small command that copies it. From the panel's folder:
+
+```bash
+npm run ext:new -- my-cool-extension "My Cool Extension"
+```
+
+This copies `extensions/_template` to `extensions/my-cool-extension` and fills in the id and the name. You get:
+
+<Files>
+  <File name="extension.json">The manifest, with the id and name already set.</File>
+  <Folder name="src">
+    <File name="MyExtension.php">The PHP class the panel starts.</File>
+  </Folder>
+  <Folder name="web">
+    <File name="index.js">The browser part, which registers itself with the panel.</File>
+    <File name="style.css">A stylesheet, loaded on every page the extension is active on.</File>
+  </Folder>
+</Files>
+
+## See it work
+
+Build it, install it and turn it on:
+
+```bash
+npm run ext:build -- extensions/my-cool-extension
+php artisan p:extension:install dist/extensions/my-cool-extension-1.0.0.stratext --enable
+```
+
+Open any server's page. The template adds a card to the **Settings** page of the server and a **Hello** page to
+the server menu, both of which call a route the extension adds and show what the setting says. Open
+**Admin → Extensions** to change that setting and watch the card follow.
+
+<Callout type="info">
+  The template is a working extension, not a scaffold: it registers a filter, adds a client route, adds a slot
+  and adds a server page. Reading `extensions/_template/README.md` in the panel is the short version of
+  everything in this section.
+</Callout>
+
+## The three files that matter
+
+Exporting a class from `src/` is not enough — the manifest has to name it, and the panel has to be able to find
+it. The three links are:
+
+1. `php.main` names the class. `php.autoload` maps its namespace to a folder, the same way Composer does:
+
+   ```json
+   "php": { "main": "Stratosphere\\MyCoolExtension\\MyExtension", "autoload": { "Stratosphere\\MyCoolExtension\\": "src/" } }
+   ```
+
+2. `web.scripts` lists the browser files, as paths below `web/`:
+
+   ```json
+   "web": { "scripts": ["web/index.js"], "styles": ["web/style.css"] }
+   ```
+
+3. The browser file calls `Stratosphere.register` with the **same id** as the manifest. If they do not match,
+   the extension's own routes and its page will disagree about which extension they belong to.
+
+```js
+Stratosphere.register({ id: 'my-cool-extension', setup(api) { /* ... */ } });
+```
+
+## A small change to make
+
+The template's filter adds a field to what the client API tells about every server. Try changing it in
+`src/MyExtension.php`:
+
+```php
+public function register(): void
+{
+    $this->context->filter('server.attributes', function (array $attributes) {
+        // $attributes is what the panel was about to answer with. Return it changed.
+        $attributes['my_cool_extension'] = [
+            'greeting' => $this->context->setting('greeting'),
+            'at' => now()->toIso8601String(),
+        ];
+
+        return $attributes;
+    });
+}
+```
+
+Rebuild and reinstall with `--force` (your settings and stored data are kept), and the new field appears in the
+client API. From here:
+
+<Cards>
+  <Card title="The manifest" href="/docs/stratosphere/extensions/manifest">
+    Settings, migrations, and every rule the installer checks
+  </Card>
+  <Card title="Hooks" href="/docs/stratosphere/extensions/hooks">
+    The four places the panel asks extensions what to do
+  </Card>
+  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+    $this->context, the store, and how errors are handled
+  </Card>
+  <Card title="The browser API" href="/docs/stratosphere/extensions/browser-api">
+    Slots, server pages, React and the http client
+  </Card>
+</Cards>
+
+## When it does not load
+
+The panel will not stop for an extension, so a mistake usually shows up as *nothing happening* rather than an
+error page. The reason is always on **Admin → Extensions** and in `storage/logs`. The usual causes:
+
+- The manifest's `id` and the `id` in `Stratosphere.register` do not match.
+- `web.scripts` names a file that is not below `web/`, so it is refused and never loaded.
+- `php.main` is set but `php.autoload` is missing, which the installer rejects outright.
+- The extension is installed but not enabled.
+
+[When something goes wrong](/docs/stratosphere/extensions/troubleshooting) goes through all of it.

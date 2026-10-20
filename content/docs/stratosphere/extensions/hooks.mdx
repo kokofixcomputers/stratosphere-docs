@@ -1,0 +1,147 @@
+---
+title: Hooks
+description: The places the panel asks extensions what to do.
+---
+
+A hook is a named place in the panel where extensions are asked. The panel's hooks are all **filters**: it is
+about to use a value (the answer the router gets, the attributes of a server) and every extension that listens
+may change it, one after the other. The mechanism is the same one an action would use, and the names are fixed:
+
+```php
+$this->context->filter('router.state', fn (array $state, Server $server) => $state);
+```
+
+<Callout type="info">
+  `filter()` and `on()` are the same call underneath. Use `filter()` when you change the value and `on()` when
+  you only want to know it went past — the panel runs the listeners either way, and returning nothing from an
+  `on()` listener is normal.
+</Callout>
+
+## The hooks the panel has
+
+<TypeTable
+  type={{
+    'router.state': {
+      description: 'The answer the panel is about to give the Minecraft router about one server. Change what the router says, including what players are told while a server cannot be joined.',
+      type: 'array',
+      args: 'Server, ServerDomain',
+    },
+    'router.domains': {
+      description: 'The list of domains the router is given. Add or remove entries to decide which domains a server answers on.',
+      type: 'array',
+      args: '—',
+    },
+    'server.attributes': {
+      description: 'The attributes of a server in the client API. Add your own fields for the browser to read.',
+      type: 'array',
+      args: 'Server, User',
+    },
+    'site.configuration': {
+      description: 'What every page of the panel is loaded with, as `window.SiteConfiguration`. Put a value there that your browser code needs on every page.',
+      type: 'array',
+      args: '—',
+    },
+  }}
+/>
+
+The hooks are declared in `app/Extensions/Hooks.php` in the panel, which is the list an extension author should
+check when upgrading.
+
+## A filter must return the right kind of value
+
+A filter is given a value and returns the value it wants the panel to use instead. **The kind has to stay the
+same** — an array comes back an array, a string comes back a string. A listener that returns something else is
+ignored and written down; it cannot break what called it.
+
+```php
+// Good: an array in, an array out.
+$this->context->filter('server.attributes', function (array $attributes, Server $server, User $user) {
+    $attributes['mine'] = ['owner' => $user->username];
+
+    return $attributes;
+});
+```
+
+Two rules that save time:
+
+- **Return the value you were given**, changed. A listener that returns `null` is skipped, so forgetting the
+  `return` means "no change" rather than "wipe the value".
+- **You cannot change the extra arguments.** `$server` and `$user` are there to look at. The value is the only
+  thing that passes through.
+
+### Order
+
+Listeners run in priority order — lower numbers first, defaulting to `10` — and within one priority, the order
+they were registered in:
+
+```php
+$this->context->filter('router.state', $callback, priority: 5);  // runs before the default
+```
+
+## Changing what the router says
+
+`router.state` is the hook most extensions want, because it is what decides what players see. The value is an
+array describing one server, and the panel has already worked out its state before your code runs.
+
+```php
+use Pterodactyl\Models\Server;
+
+$this->context->filter('router.state', function (array $state, Server $server) {
+    // Only speak for a server that is off.
+    if (($state['state'] ?? null) !== 'offline') {
+        return $state;
+    }
+
+    $state['notice'] = [
+        'label' => 'Maintenance',
+        'message' => $server->name . ' is being worked on, back soon.',
+    ];
+
+    return $state;
+});
+```
+
+The `notice` key is the one to add: a `label` and a `message`, which the router shows in the server list and
+when a player tries to join. This is exactly what the
+[worked example](/docs/stratosphere/extensions/example) does, with the message coming from a setting and from
+what the server's owner wrote.
+
+<Callout type="warn">
+  A server that is **asleep** (stopped by auto sleep) is not the same as one that is **offline**. If you want to
+  speak for a sleeping server too, check `$state['sleeping']` as well — otherwise the wake-on-join message never
+  appears.
+</Callout>
+
+## Adding to what the browser gets
+
+`site.configuration` is the way to get a value into the browser on every page, where it is readable as
+`window.SiteConfiguration`:
+
+```php
+$this->context->filter('site.configuration', function (array $configuration) {
+    $configuration['my_extension'] = [
+        'enabled' => (bool) $this->context->setting('enabled'),
+        'max' => (int) $this->context->setting('max'),
+    ];
+
+    return $configuration;
+});
+```
+
+```js
+const { enabled, max } = window.SiteConfiguration.my_extension ?? {};
+```
+
+For a value that only one server's page needs, an ordinary [client route](/docs/stratosphere/extensions/routes)
+is usually better: it is permission-checked and carries the login.
+
+## Next
+
+<Cards>
+  <Card title="Routes" href="/docs/stratosphere/extensions/routes">
+    Where the values your browser code needs come from
+  </Card>
+  <Card title="The browser API" href="/docs/stratosphere/extensions/browser-api">
+    Slots and server pages, the places your components go
+  </Card>
+</Cards>

@@ -1,0 +1,106 @@
+---
+title: Extensions
+description: Add to the panel without changing its files.
+---
+
+An extension adds to the panel without changing its files. It is a `.stratext` file — a zip with
+`extension.json` at its top — that the panel installs into `storage/extensions/`, where it stays across
+updates.
+
+<Callout type="warn">
+  An extension is PHP and JavaScript that runs as part of the panel, with the same access to everything in
+  it: the database, the filesystem, every request. The panel protects itself from *mistakes* (an error is
+  caught and the extension is left out of that request), but not from *intent*. Only install extensions from
+  people you trust.
+</Callout>
+
+## What an extension can do
+
+| | |
+| --- | --- |
+| [Change what the panel does](/docs/stratosphere/extensions/hooks) | Filters let you change the answer the router gets, the attributes of a server, or the configuration the pages load with |
+| [Add API routes](/docs/stratosphere/extensions/routes) | For logged-in people, for admins, or with no login at all |
+| [Add pages and cards](/docs/stratosphere/extensions/browser-api) | A card on a server's console or settings page, a page in the server menu, something on the dashboard |
+| [Store data](/docs/stratosphere/extensions/php-api#the-store) | A key/value store of your own, no migration needed |
+| [Add settings](/docs/stratosphere/extensions/manifest#settings) | Fields an admin fills in on the Extensions page, stored for you |
+| [Run migrations](/docs/stratosphere/extensions/manifest#migrations) | Bring your own tables when a key/value store is not enough |
+
+## How it fits together
+
+Three files do most of the work, and you can see all of them in [a complete example](/docs/stratosphere/extensions/example):
+
+<Files>
+  <File name="extension.json">
+    The manifest. Who the extension is, what it adds (its PHP class, its scripts and styles), which settings
+    an admin can set and whether it ships migrations.
+  </File>
+  <Folder name="src">
+    The PHP. `php.main` names the class the panel starts, which extends `Pterodactyl\Extensions\Extension`. It
+    is created once per request, and gets `$this->context` — the only thing an extension may rely on besides
+    the hooks.
+  </Folder>
+  <Folder name="web">
+    What runs in the browser. Only the files named in `web.scripts` and `web.styles` are loaded. They talk to
+    the panel through `window.Stratosphere`.
+  </Folder>
+</Files>
+
+The panel starts your PHP class on every request and calls `register()`, then `boot()`:
+
+```php
+namespace Stratosphere\MyExtension;
+
+use Pterodactyl\Extensions\Extension;
+
+class MyExtension extends Extension
+{
+    /** Called first. Listen to hooks here. */
+    public function register(): void
+    {
+        $this->context->filter('server.attributes', fn (array $attributes) => [...$attributes, 'mine' => true]);
+    }
+
+    /** Called when everything is registered. Add routes here. */
+    public function boot(): void
+    {
+        $this->context->clientRoutes(function ($router) {
+            $router->get('/hello', fn () => ['message' => $this->context->setting('greeting')]);
+        });
+    }
+}
+```
+
+## Get going
+
+<Cards>
+  <Card title="Your first extension" href="/docs/stratosphere/extensions/first-extension">
+    Start from the template and have something working in a few minutes
+  </Card>
+  <Card title="The manifest" href="/docs/stratosphere/extensions/manifest">
+    Every field of extension.json, and what it is checked against
+  </Card>
+  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+    Everything $this->context gives you
+  </Card>
+  <Card title="The browser API" href="/docs/stratosphere/extensions/browser-api">
+    window.Stratosphere, slots and server pages
+  </Card>
+  <Card title="Hooks" href="/docs/stratosphere/extensions/hooks">
+    The places the panel asks extensions what to do
+  </Card>
+  <Card title="A worked example" href="/docs/stratosphere/extensions/example">
+    How the offline-motd extension is put together, end to end
+  </Card>
+</Cards>
+
+## Installing an extension
+
+The panel never starts a new extension on its own — a freshly installed one is off until it is enabled:
+
+```bash
+php artisan p:extension:install path/to/my-extension-1.0.0.stratext --enable
+```
+
+Managing them afterwards — enabling, disabling, replacing and removing — is covered in
+[Extensions administration](/docs/stratosphere/admin/extensions). Building the `.stratext` is covered in
+[Building and packaging](/docs/stratosphere/extensions/building).

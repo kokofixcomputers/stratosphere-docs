@@ -1,0 +1,243 @@
+---
+title: A worked example
+description: An extension that touches everything, explained end to end.
+---
+
+The panel ships a small but complete extension, `offline-motd`, that uses every part of the API at once:
+
+- a [hook](/docs/stratosphere/extensions/hooks) that changes what the Minecraft router says,
+- [client routes](/docs/stratosphere/extensions/routes) of its own,
+- a [setting](/docs/stratosphere/extensions/manifest#settings) the admin controls,
+- the [store](/docs/stratosphere/extensions/php-api#the-store) holding a message *per server*,
+- a [slot](/docs/stratosphere/extensions/browser-api#slots) that adds a card to a server's Settings page.
+
+It is worth reading in full, because the pieces fit together the way they will in your own extension. Read the
+real files in `extensions/offline-motd/` in the panel alongside this page.
+
+## What it does
+
+Players see a message while a server is off — in the server list and when they try to join. The wording comes
+from the admin, or from the server's own owner, who writes theirs on the server's Settings page.
+
+<Files>
+  <File name="extension.json">The manifest: an id, a PHP class, a script and a stylesheet.</File>
+  <Folder name="src">
+    <File name="OfflineMotd.php">The hook, the routes, and where the message comes from.</File>
+  </Folder>
+  <Folder name="web">
+    <File name="index.js">The card the owner types into.</File>
+    <File name="style.css">Namespaced styles for that card.</File>
+  </Folder>
+</Files>
+
+## The manifest
+
+```json
+{
+  "api": 1,
+  "id": "offline-motd",
+  "name": "Offline MOTD",
+  "version": "1.0.0",
+  "php": {
+    "main": "Stratosphere\\OfflineMotd\\OfflineMotd",
+    "autoload": { "Stratosphere\\OfflineMotd\\": "src/" }
+  },
+  "web": {
+    "scripts": ["web/index.js"],
+    "styles": ["web/style.css"]
+  },
+  "settings": [
+    { "key": "message", "label": "Message", "type": "textarea", "default": "" },
+    { "key": "label", "label": "Label", "type": "text", "default": "Offline" },
+    { "key": "allow_server_messages", "label": "Let servers set their own", "type": "boolean", "default": true },
+    { "key": "include_sleeping", "label": "Also for sleeping servers", "type": "boolean", "default": false }
+  ]
+}
+```
+
+`php.main` names the class, `php.autoload` says where its classes live, and the four settings are what the admin
+edits under **Admin → Extensions**. Nothing else is needed: no migration, because the store is enough.
+
+## Listening to the router
+
+`register()` is where you listen. The extension wants to change what the router is told about a server:
+
+```php
+public function register(): void
+{
+    $this->context->filter('router.state', fn (array $answer, Server $server) => $this->withNotice($answer, $server));
+}
+```
+
+The work is in `withNotice`, and the interesting part is how carefully it decides whether to speak at all:
+
+```php
+private function withNotice(array $answer, Server $server): array
+{
+    // Only a server that is off.
+    if (($answer['state'] ?? null) !== 'offline') {
+        return $answer;
+    }
+
+    // A sleeping server is not the same as an offline one; only speak for it
+    // when the admin asked for that.
+    if (!empty($answer['sleeping']) && !$this->context->setting('include_sleeping', false)) {
+        return $answer;
+    }
+
+    $message = $this->messageFor($server);
+    if ($message === null) {
+        return $answer;
+    }
+
+    $answer['notice'] = [
+        'label' => (string) $this->context->setting('label', 'Offline'),
+        'message' => str_replace('{server}', $server->name, $message),
+    ];
+
+    return $answer;
+}
+```
+
+Points worth copying:
+
+- **It returns the value it was given**, changed. Every early return gives back `$answer` untouched, which is
+  how a filter says "no change".
+- **It checks `sleeping` separately.** A server stopped by *auto sleep* is not offline in the sense the router
+  means, and adding a notice there would hide the wake-on-join message.
+- **It reads settings with a fallback**, so a missing value is never a surprise.
+
+### Where the message comes from
+
+The owner's message wins, when the admin allows it; otherwise the admin's:
+
+```php
+private function messageFor(Server $server): ?string
+{
+    if ($this->context->setting('allow_server_messages', true)) {
+        $own = $this->context->store()->get('server.' . $server->id);
+        if (is_string($own) && trim($own) !== '') {
+            return $own;
+        }
+    }
+
+    $general = (string) $this->context->setting('message', '');
+
+    return trim($general) === '' ? null : $general;
+}
+```
+
+The key `server.<id>` is a convention the extension chose for itself. The store files everything under the
+extension's id, so `server.7` here cannot collide with `server.7` in another extension, and `store()->all('server.')`
+gets every server's message at once.
+
+## The routes
+
+`boot()` adds routes, and there are exactly two — read one, write one:
+
+```php
+public function boot(): void
+{
+    $this->context->clientRoutes(function ($router) {
+        $router->get('/servers/{server}/message', fn (Request $request, Server $server) => $this->show($request, $server));
+        $router->put('/servers/{server}/message', fn (Request $request, Server $server) => $this->save($request, $server));
+    });
+}
+```
+
+They land at `/api/client/extensions/offline-motd/servers/<uuid>/message`. `{server}` arrives as a `Server`
+model, because the client API resolves it by uuid. Each one checks the permission itself:
+
+```php
+private function show(Request $request, Server $server): JsonResponse
+{
+    // The panel's own rule for who may change a server's settings,
+    // so owners and admins pass and subusers pass when their role allows it.
+    abort_unless($request->user()->can(Permission::ACTION_SETTINGS_RENAME, $server), 404);
+
+    // ...
+}
+```
+
+`404` rather than `403`, so someone who guessed a uuid cannot tell that the server exists. The write route
+validates its input and stores it:
+
+```php
+$data = $request->validate(['message' => 'nullable|string|max:' . self::MAX_LENGTH]);
+$message = trim((string) ($data['message'] ?? ''));
+
+if ($message === '') {
+    $this->context->store()->forget('server.' . $server->id);
+} else {
+    $this->context->store()->put('server.' . $server->id, $message);
+}
+```
+
+An empty message **forgets** the key rather than storing an empty string, so the fallback to the admin's message
+is automatic. Small decisions like that are what make a card feel finished.
+
+## The browser side
+
+The script registers with the panel and puts a card on the server's Settings page:
+
+```js
+Stratosphere.register({
+  id: 'offline-motd',           // must match extension.json
+  setup(api) {
+    api.slot('server.settings', Card);
+  },
+});
+```
+
+The card reads the current message, offers a preview, and saves:
+
+```js
+const url = '/api/client/extensions/offline-motd/servers/' + uuid + '/message';
+
+api.http.get(url).then((response) => {
+  setInfo(response.data);
+  setText(response.data.message || '');
+});
+
+function save(value) {
+  api.http.put(url, { message: value })
+    .then((response) => setStatus('Saved.'))
+    .catch((error) => {
+      const detail = error?.response?.data?.errors?.[0]?.detail;
+      setStatus(detail || 'It could not be saved.');
+    });
+}
+```
+
+Three habits worth taking from it:
+
+- **`uuid`, not `id`, in the URL.** That is what the client API resolves.
+- **The server returns the new state** (`show`) after a write, so the card updates from the panel's answer rather
+  than guessing what happened.
+- **It renders nothing when it should not be used.** If the request fails, or the person may not edit, the
+  component returns `null`, so no empty card appears.
+
+The `GET` also answers with `allowed` and `can_edit`, which is how the card knows to keep quiet when the admin
+has turned server-set messages off — the same information the route enforces, so the interface and the rule
+cannot drift apart.
+
+## The whole loop
+
+```bash
+npm run ext:build -- extensions/offline-motd
+php artisan p:extension:install dist/extensions/offline-motd-1.0.0.stratext --force --enable
+```
+
+Then: set a message under **Admin → Extensions**, stop a server that has its own message, and look at it in the
+server list.
+
+## Next
+
+<Cards>
+  <Card title="When something goes wrong" href="/docs/stratosphere/extensions/troubleshooting">
+    Where the reason is written down
+  </Card>
+  <Card title="Hooks" href="/docs/stratosphere/extensions/hooks">
+    Back to the hook this extension uses
+  </Card>
+</Cards>

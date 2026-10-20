@@ -1,0 +1,177 @@
+---
+title: Routes
+description: Client, admin and public routes, and what protects each one.
+---
+
+Routes are added in `boot()`. There are three kinds, and they differ in who can reach them and what the panel
+does before your code runs.
+
+```php
+public function boot(): void
+{
+    $this->context->clientRoutes(function ($router) { /* ... */ });
+    $this->context->adminRoutes(function ($router) { /* ... */ });
+    $this->context->publicRoutes(function ($router) { /* ... */ });
+}
+```
+
+Each takes a callback that is given the panel's router, so you use the `Route` facade's own methods — `get`,
+`post`, `put`, `delete`, `patch`, and all the rest.
+
+## The three kinds
+
+<TypeTable
+  type={{
+    clientRoutes: {
+      description: 'For people who are logged in. Mounted at `/api/client/extensions/<id>/`.',
+      type: 'void',
+    },
+    adminRoutes: {
+      description: 'For admins. Mounted at `/admin/extensions/<id>/x/`.',
+      type: 'void',
+    },
+    publicRoutes: {
+      description: 'No login at all. Mounted at `/api/extensions/<id>/`.',
+      type: 'void',
+    },
+  }}
+/>
+
+### Client routes
+
+The same protection as the rest of the client API: sessions or API keys, the rate limit, two-factor where it is
+required, and errors caught so a broken extension answers with an error instead of a crash.
+
+```php
+use Pterodactyl\Models\Server;
+use Illuminate\Http\Request;
+
+$this->context->clientRoutes(function ($router) {
+    $router->get('/servers/{server}/message', fn (Request $request, Server $server) => [
+        'message' => $this->context->store()->get('server.' . $server->id),
+    ]);
+});
+```
+
+**`{server}` is already the `Server` model.** The panel finds it by the uuid in the route the same way it does
+everywhere else in the client API, so type the argument `Server $server` and use it directly — no lookup.
+
+### Admin routes
+
+Behind the admin login, at `/admin/extensions/<id>/x/`. These are ordinary web routes, so they get sessions and
+CSRF like the rest of the admin area:
+
+```php
+use Illuminate\Support\Facades\Route;
+
+$this->context->adminRoutes(function ($router) {
+    $router->get('/report', fn () => response()->json([
+        'installed' => $this->context->version(),
+        'rows' => count($this->context->store()->all()),
+    ]));
+});
+```
+
+Protect each one with the panel's own permission middleware. A route without it is reachable by *any* admin:
+
+```php
+$router->get('/dangerous', $handler)->middleware('admin.can:root');
+$router->get('/settings', $handler)->middleware('admin.can:settings.general.view');
+```
+
+`admin.can:<permission>` accepts several permissions, and holding **any one** of them is enough:
+
+```php
+$router->post('/rebuild', $handler)->middleware('admin.can:settings.general.update,settings.general.view');
+```
+
+`admin.can:root` is for the few things only root admins may do.
+
+### Public routes
+
+No login and **nothing but a rate limit** (60 requests a minute). Anything you put here is reachable by anyone
+on the internet, so validate the body, check where the request came from, and never trust a value because the
+caller said something about it. This is the place for a webhook or a public status page:
+
+```php
+$this->context->publicRoutes(function ($router) {
+    $router->post('/hooks/build-finished', function (Request $request) {
+        $secret = $request->header('X-Secret');
+
+        abort_unless(is_string($secret) && hash_equals((string) $this->context->setting('secret'), $secret), 403);
+
+        $data = $request->validate(['server_id' => 'required|integer']);
+
+        // ...
+    });
+});
+```
+
+## Checking permissions yourself
+
+A client route only proves *someone is logged in*, not that they may do this to *this* server. Check that
+yourself, with the panel's own permissions, so your rules match the rest of the panel:
+
+```php
+use Pterodactyl\Models\Permission;
+use Pterodactyl\Models\Server;
+use Illuminate\Http\Request;
+
+private function show(Request $request, Server $server)
+{
+    // Owners and admins always pass; subusers pass when their role allows it.
+    abort_unless($request->user()->can(Permission::ACTION_SETTINGS_RENAME, $server), 404);
+
+    return ['ok' => true];
+}
+```
+
+Two habits worth having:
+
+- **`404` when they may not.** Returning `403` tells someone who guessed a uuid that the server exists.
+- **Check on every route.** `{server}` being resolved means the server exists and belongs to the panel, not that
+  this person can touch it.
+
+## Returning a response
+
+A route can return anything Laravel accepts. The client API expects JSON, so an array or a
+`JsonResponse` are the usual ones:
+
+```php
+use Illuminate\Http\JsonResponse;
+
+$router->get('/hello', fn (): JsonResponse => new JsonResponse(['message' => 'Hello']));
+```
+
+Errors are best raised rather than returned, because the panel already answers in the shape the client expects:
+
+```php
+abort_unless($allowed, 404);
+$data = $request->validate(['message' => 'nullable|string|max:300']);
+```
+
+Validation failures come back as a `422` with the panel's own error shape, which the browser client and the
+panel's forms already understand.
+
+## Routes and the route cache
+
+Routes are added while the panel starts, so **they are not in the route cache**. Do not run this on a panel with
+extensions that add routes:
+
+```bash
+php artisan route:cache   # avoids this on a panel that has extensions with routes
+```
+
+Serving extension files does not depend on this — see
+[how the browser files are served](/docs/stratosphere/extensions/browser-api#how-files-are-served).
+
+## Next
+
+<Cards>
+  <Card title="The browser API" href="/docs/stratosphere/extensions/browser-api">
+    The components that call these routes
+  </Card>
+  <Card title="A worked example" href="/docs/stratosphere/extensions/example">
+    A client route, a slot and a hook working together
+  </Card>
+</Cards>

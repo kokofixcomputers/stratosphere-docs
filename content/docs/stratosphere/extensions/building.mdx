@@ -1,0 +1,109 @@
+---
+title: Building and packaging
+description: Check, minify and pack an extension into a .stratext.
+---
+
+A `.stratext` is just a zip with `extension.json` at its top. The panel ships a command that checks the
+manifest, minifies the browser files and packs the folder:
+
+```bash
+npm run ext:build -- extensions/my-extension
+```
+
+It writes `dist/extensions/my-extension-1.0.0.stratext` — the id and version from the manifest. From there:
+
+```bash
+php artisan p:extension:install dist/extensions/my-extension-1.0.0.stratext --enable
+```
+
+<Callout type="info">
+  The same folder and the same manifest always give the same file, byte for byte: the build fixes the timestamp
+  inside the archive. Two people building the same version get the same checksum.
+</Callout>
+
+## Options
+
+| Option | What it does |
+| --- | --- |
+| `--out <folder>` | Write the `.stratext` somewhere other than `dist/extensions`. |
+| `--no-minify` | Leave the JavaScript and CSS under `web/` as they are. Useful when you are debugging a file that has already been packed. |
+
+```bash
+npm run ext:build -- extensions/my-extension --out /tmp --no-minify
+```
+
+## What the build checks
+
+The build runs the checks the installer makes that can be done **without the panel** — so a broken manifest fails
+here instead of when you install it. It refuses to build when:
+
+- `api` is not `1`.
+- `id` is not 3 to 48 characters of `a-z`, `0-9` and `-`, starting and ending with a letter or a digit.
+- `version` is not `x.y.z` (a pre-release or build suffix is fine).
+- `name` is missing.
+- `php.main` is set without `php.autoload`.
+- A `web.scripts` or `web.styles` entry is not a file inside `web/`, or is named there but not in the folder.
+- A `php.autoload` namespace does not end in `\`, or its folder has no files.
+- The class named by `php.main` is not where `php.autoload` says it should be.
+- A setting `key` is not valid, appears twice, or has a type other than `text`, `textarea`, `number`,
+  `boolean`, `select`, `password`.
+
+The panel checks all of this again on install, plus the things only it can know, and never trusts the file.
+
+## What goes into the archive
+
+Everything in the extension's folder, **except** what a working folder collects and what would be a package
+inside a package:
+
+- folders: `node_modules`, `.git`, `.idea`, `.vscode`, `dist`
+- files: `.DS_Store`, `Thumbs.db`
+- anything ending in `.stratext`, `.log`, `.swp` or `~`
+
+So a `README.md`, an example config, or a `LICENSE` file you want to ship are included — that is deliberate.
+Nothing outside the folder is ever included, so keep the extension self-contained.
+
+## Packing it yourself
+
+Because it is only a zip, any tool can make one, as long as `extension.json` is at the top of the archive and
+not inside a folder:
+
+```bash
+cd extensions/my-extension
+zip -r ../../my-extension-1.0.0.stratext . -x '.*' -x 'node_modules/*'
+```
+
+<Callout type="warn">
+  The commonest mistake is zipping the *folder* rather than its *contents*, which puts `my-extension/extension.json`
+  inside the archive. The installer looks for `extension.json` at the top and rejects it.
+</Callout>
+
+## Installing while you develop
+
+The install command refuses to replace an extension that is already installed unless you say so:
+
+```bash
+npm run ext:build -- extensions/my-extension
+php artisan p:extension:install dist/extensions/my-extension-1.0.0.stratext --force --enable
+```
+
+`--force` replaces the files while **keeping the settings, the on/off state and everything in the store**, so you
+can iterate without re-entering your settings. Remember that the browser files are cached by version — bump
+`version` or hard-reload to see a change.
+
+A quick loop:
+
+```bash
+npm run ext:build -- extensions/my-extension \
+  && php artisan p:extension:install dist/extensions/my-extension-1.0.0.stratext --force --yes --enable
+```
+
+## Next
+
+<Cards>
+  <Card title="A worked example" href="/docs/stratosphere/extensions/example">
+    The whole loop on a real extension
+  </Card>
+  <Card title="When something goes wrong" href="/docs/stratosphere/extensions/troubleshooting">
+    What to check first
+  </Card>
+</Cards>

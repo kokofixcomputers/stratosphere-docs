@@ -1,0 +1,148 @@
+---
+title: When something goes wrong
+description: Where the reason is written down, and what to check first.
+---
+
+The panel never stops for an extension. A failure — starting, a hook, a route, a component, a script that will
+not load — is caught, the extension is left out of **that** request, and the panel carries on with the others.
+
+The consequence is that a mistake usually looks like *nothing happened*, rather than an error page. The reason
+is always written down in two places:
+
+- **Admin → Extensions** — the extensions that failed, and why.
+- **`storage/logs`** — the same thing, in the panel's log.
+
+## Start here
+
+<Steps>
+  <Step>
+    ### Is it installed, and is it on?
+    A freshly installed extension is **off** until it is enabled.
+
+    ```bash
+    php artisan p:extension:list
+    php artisan p:extension:enable my-extension
+    ```
+  </Step>
+  <Step>
+    ### Read the reason on the Extensions page
+    Open **Admin → Extensions**. A failed extension says what went wrong, where, and in which request. This
+    answers most questions on its own.
+  </Step>
+  <Step>
+    ### Check the log
+    ```bash
+    tail -n 100 storage/logs/laravel.log
+    ```
+  </Step>
+  <Step>
+    ### Turn it off if the panel is unusable
+    ```bash
+    php artisan p:extension:disable my-extension
+    ```
+
+    This works even when the extension is what is breaking the panel, because it never starts it.
+  </Step>
+</Steps>
+
+## The usual causes
+
+### Nothing happens at all
+
+The extension was installed but never enabled, or its browser file threw while loading. Check
+**Admin → Extensions** first, then the browser console — a script that fails is reported there as well as on the
+panel.
+
+### The card or the page does not appear
+
+<Accordions>
+  <Accordion title="The id does not match">
+    The id in `Stratosphere.register` has to be the id in `extension.json`. When they differ, the script
+    registers under one name and your routes are mounted under another, so the component renders against URLs
+    that do not exist.
+  </Accordion>
+  <Accordion title="The file is not listed in the manifest">
+    Only what is named in `web.scripts` and `web.styles` is loaded. A file inside `web/` that is not listed is
+    never sent to the browser at all.
+  </Accordion>
+  <Accordion title="The slot name is wrong">
+    An unknown slot is reported and ignored. The slots are `server.console`, `server.settings` and
+    `dashboard.top` — nothing else exists.
+  </Accordion>
+  <Accordion title="A permission is hiding it">
+    A [server page](/docs/stratosphere/extensions/browser-api#server-pages) with a `permission` only shows for
+    people who have it. Check with an owner or a root admin.
+  </Accordion>
+</Accordions>
+
+### A change does not show up
+
+The browser files are loaded with `?v=<version>`, so a changed script or stylesheet is only fetched when the
+**version changes**. Bump `version` in the manifest and rebuild, or hard-reload while developing.
+
+### The route answers 404
+
+- Client routes are at `/api/client/extensions/<id>/...` and need you to be logged in.
+- Admin routes are at `/admin/extensions/<id>/x/...`.
+- Public routes are at `/api/extensions/<id>/...`.
+
+A `404` from your own handler is usually a permission check doing its job — the extension uses `404` rather than
+`403` for that on purpose. A `404` on the path itself means the route was never registered: check that it is
+added in `boot()`, not `register()`.
+
+<Callout type="warn">
+  Routes are added while the panel starts, so they are **not in the route cache**. If `php artisan route:cache`
+  has been run on this panel, extension routes will not exist. Re-run the panel's own clear command.
+</Callout>
+
+### The route answers 500
+
+The extension threw while the route ran. The panel caught it and answered with a short message instead of a
+stack trace, as it does for any extension failure. The real reason is in `storage/logs` and on the Extensions
+page.
+
+### A filter changed nothing
+
+- **It returned the wrong kind of value.** An array must come back an array; anything else is ignored and
+  written down.
+- **It returned `null`.** A listener that returns nothing is skipped, so a missing `return` means "no change".
+- **The value already was what you set.** The hook ran; there was simply nothing to change.
+- **Another listener at a lower priority overwrote it.** Lower numbers run first, defaulting to `10`.
+
+### The panel is broken and will not come back
+
+Some mistakes cannot be caught by PHP — a class that breaks the rules of the one it extends, for instance. That
+kills the request it happens in, and the panel notices that the extension never finished starting and switches
+it off, so the **next** request works.
+
+If that is not enough, stop extensions being started at all, in the panel's `.env`:
+
+```bash
+STRATOSPHERE_EXTENSIONS=false
+```
+
+Then disable the one that is at fault at your leisure:
+
+```bash
+php artisan p:extension:disable my-extension
+```
+
+## "It was working, then I updated the panel"
+
+An extension is PHP inside the panel, so it can use anything in the panel — and anything in the panel can
+change between versions. The parts that are **stable** are the four [hooks](/docs/stratosphere/extensions/hooks)
+and the methods on `$this->context`. If you depend on something else, an update can change it under you.
+
+If an update broke an extension, the reason is in the log. If the extension is not yours, tell its author; if it
+is, prefer the context and the hooks where they will do.
+
+## Next
+
+<Cards>
+  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+    The stable surface to build on
+  </Card>
+  <Card title="Extensions administration" href="/docs/stratosphere/admin/extensions">
+    Installing, enabling and removing them
+  </Card>
+</Cards>

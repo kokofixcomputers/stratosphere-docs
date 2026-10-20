@@ -1,0 +1,183 @@
+---
+title: The PHP API
+description: Everything $this->context gives your extension class.
+---
+
+The class named by `php.main` extends `Pterodactyl\Extensions\Extension`. The panel makes one instance when it
+starts, once per request, and gives it an `ExtensionContext` as `$this->context`. That context is the part of
+the panel an extension may rely on; anything else it uses is the panel's own internals, which are free to change.
+
+```php
+namespace Stratosphere\MyExtension;
+
+use Pterodactyl\Extensions\Extension;
+
+class Main extends Extension
+{
+    public function register(): void { /* listen to hooks */ }
+    public function boot(): void { /* add routes */ }
+}
+```
+
+`register()` is called first, before routes exist. `boot()` is called when everything has been registered. Do
+as little as possible in either — listen, add routes, and do the real work when a request asks for it.
+
+## The two methods
+
+Neither is required, but almost every extension uses one:
+
+- **`register()`** — called first. This is where you call `filter()` and `on()` to listen to
+  [hooks](/docs/stratosphere/extensions/hooks).
+- **`boot()`** — called when everything is registered. This is where you add
+  [routes](/docs/stratosphere/extensions/routes).
+
+Opening a database connection or reading a file in `register()` slows down every request in the panel, not just
+the ones your extension answers.
+
+## Context methods
+
+<TypeTable
+  type={{
+    id: { description: 'The id from the manifest.', type: 'string' },
+    version: { description: 'The version from the manifest.', type: 'string' },
+    manifest: { description: 'The parsed manifest, for anything the other methods do not cover.', type: 'Manifest' },
+    path: {
+      description: 'A path inside the extension\'s own folder. `path()` is the folder, `path("data/list.json")` is a file in it.',
+      type: 'string',
+    },
+    setting: {
+      description: 'One setting, as the admin set it, or the default from the manifest. `setting("greeting")`, or `setting("greeting", "Hello")` for a fallback of your own.',
+      type: 'mixed',
+    },
+    settings: { description: 'Every setting at once, as an associative array.', type: 'array' },
+    store: { description: 'Your key/value store. See [the store](#the-store).', type: 'ExtensionStore' },
+    log: { description: 'The panel\'s logger, writing to `storage/logs` like everything else.', type: 'LoggerInterface' },
+    filter: { description: 'Change a value of the panel. See [Hooks](/docs/stratosphere/extensions/hooks).', type: 'void' },
+    on: { description: 'Be told that something happened. See [Hooks](/docs/stratosphere/extensions/hooks).', type: 'void' },
+    clientRoutes: { description: 'Routes for logged-in people, under `/api/client/extensions/<id>/`.', type: 'void' },
+    adminRoutes: { description: 'Pages and actions for admins, under `/admin/extensions/<id>/x/`.', type: 'void' },
+    publicRoutes: { description: 'Routes with no login at all, under `/api/extensions/<id>/`.', type: 'void' },
+  }}
+/>
+
+```php
+$id = $this->context->id();
+$secret = $this->context->setting('api_key');
+$file = $this->context->path('data/list.json');
+$this->context->log()->info('Something worth writing down.');
+```
+
+## The store
+
+Most extensions need to remember a little: a message per server, a counter, a timestamp. The store is a
+key/value table that belongs to your extension, so you do not have to ship a migration for it.
+
+<TypeTable
+  type={{
+    get: {
+      description: 'Read a value, or the fallback you give if it was never set. `get("server.7")`.',
+      type: 'mixed',
+    },
+    put: { description: 'Write a value. It is stored as JSON, so anything that survives `json_encode` fits.', type: 'void' },
+    has: { description: 'Whether a key has ever been set.', type: 'boolean' },
+    forget: { description: 'Delete one key.', type: 'void' },
+    all: {
+      description: 'Everything under keys starting with a prefix, as an associative array. `all("server.")` for every server.',
+      type: 'array',
+    },
+    flush: { description: 'Delete everything this extension stored. What removing it for good does.', type: 'void' },
+  }}
+/>
+
+```php
+$store = $this->context->store();
+
+$store->put('server.' . $server->id, 'Back at 9pm');
+$message = $store->get('server.' . $server->id, 'Nothing was set');
+
+if ($store->has('server.' . $server->id)) {
+    $store->forget('server.' . $server->id);
+}
+
+$everyMessage = $store->all('server.');
+```
+
+<Callout type="info">
+  Values are stored with the extension's id, so two extensions using the key `server.7` do not collide. Storing
+  the same key again replaces the old value.
+</Callout>
+
+## What an extension may use
+
+It is PHP running inside the panel, so **everything in the panel is reachable**: models, services, events, the
+`Route` facade, the request, the database. The context exists so that the *stable* parts have a name, not to sandbox
+you. That is also why the install command warns the way it does.
+
+```php
+use Pterodactyl\Models\Server;
+use Illuminate\Support\Facades\DB;
+
+$online = Server::query()->where('status', 'running')->count();
+$rows = DB::table('extension_data')->where('ext_id', $this->context->id())->count();
+```
+
+If a piece of the panel you depend on changes between versions, your extension can break on update. The four
+hooks and the context methods are the parts you can count on.
+
+## Errors are caught, always
+
+The panel never stops for an extension. Wherever your code runs — `register()`, `boot()`, a hook, a route, a
+component — a `Throwable` is caught, the extension is left out of **that request**, and the panel carries on
+with the others.
+
+```php
+public function register(): void
+{
+    // If this throws, the filter is not registered, the hook reports it,
+    // and the rest of the panel is unaffected.
+    $this->context->filter('server.attributes', fn (array $a) => [...$a, 'mine' => $this->expensive()]);
+}
+```
+
+What you get from that:
+
+| Where it fails | What happens |
+| --- | --- |
+| `register()` / `boot()` | The extension is left out of the request; the reason is on the Extensions page |
+| Inside a hook | The value is left as it was, the other listeners still run |
+| Inside a route | The route answers `500` with a short message, not a stack trace |
+| In the browser | The component is not rendered; the reason is in the browser console |
+
+Two things are worth knowing:
+
+- **The value a filter returns must be the same kind as the one it was given.** An array must come back an
+  array. A listener that returns something else is ignored and written down — it cannot break the caller.
+- **A mistake PHP cannot catch** — a class that violates the rules of the one it extends, for instance — kills
+  the request it happens in. The panel notices that the extension never finished starting and switches it off,
+  so the *next* request works.
+
+### Turning an extension off
+
+If an extension keeps the panel from working at all:
+
+```bash
+php artisan p:extension:disable my-extension
+```
+
+This works even when the extension is what is breaking the panel, because it never starts it. The other escape
+hatch is to stop extensions being started at all, in the panel's `.env`:
+
+```bash
+STRATOSPHERE_EXTENSIONS=false
+```
+
+## Next
+
+<Cards>
+  <Card title="Hooks" href="/docs/stratosphere/extensions/hooks">
+    The four places the panel asks extensions what to do
+  </Card>
+  <Card title="Routes" href="/docs/stratosphere/extensions/routes">
+    Client, admin and public routes, and what protects each one
+  </Card>
+</Cards>

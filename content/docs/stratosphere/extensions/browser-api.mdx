@@ -1,0 +1,192 @@
+---
+title: The browser API
+description: window.Stratosphere, slots, server pages, and the http client.
+---
+
+The files named in `web.scripts` are loaded after the panel has started, on every page while the extension is
+on. They find the panel at `window.Stratosphere` and register with it:
+
+```js
+Stratosphere.register({
+  id: 'my-extension',
+  setup(api) {
+    // api.slot(...), api.serverPage(...)
+  },
+});
+```
+
+The `id` **must** be the id from `extension.json` — it is what ties your components to your routes.
+
+<Callout type="warn">
+  The files are plain scripts, not modules. There is no build step, no `import`, and no bundler: use the `React`
+  and `http` the panel hands you rather than importing your own. A file that throws while loading, or a `setup`
+  that throws, is reported and the panel carries on without the extension.
+</Callout>
+
+## What `setup` is given
+
+<TypeTable
+  type={{
+    id: { description: 'The id your script registered with.', type: 'string' },
+    api: { description: 'The version of the browser API, currently `1`.', type: 'number' },
+    React: { description: 'The panel\'s own React. Use it, so hooks and context work and there is only one copy.', type: 'React' },
+    http: { description: 'The panel\'s axios client. Requests carry the login and the CSRF token, and it shares the interceptors the panel uses for errors.', type: 'AxiosInstance' },
+    slot: { description: 'Put a component on a page. See [Slots](#slots).', type: 'function' },
+    serverPage: { description: 'Add a page to the menu of every server. See [Server pages](#server-pages).', type: 'function' },
+  }}
+/>
+
+```js
+Stratosphere.register({
+  id: 'my-extension',
+  setup(api) {
+    const h = api.React.createElement;
+    const message = api.React.useState('')[0];
+
+    api.http.get('/api/client/extensions/my-extension/hello').then((response) => {
+      console.log(response.data.message);
+    });
+  },
+});
+```
+
+## Slots
+
+A slot is a named place on a page. Your component is rendered there, and is given what that page has.
+
+<TypeTable
+  type={{
+    slot: {
+      description: '`api.slot(name, Component, { order })`. The order decides where it sits among components from other extensions.',
+      type: 'function',
+    },
+  }}
+/>
+
+<TypeTable
+  type={{
+    'server.console': {
+      description: 'On the console page of a server, above the details.',
+      props: '{ server }',
+    },
+    'server.settings': {
+      description: 'On the Settings page of a server.',
+      props: '{ server }',
+    },
+    'dashboard.top': {
+      description: 'On the dashboard, above the list of servers.',
+      props: '—',
+    },
+  }}
+/>
+
+`server` is `{ id, uuid }`. Use `uuid` in a URL — that is what the client API expects — and `id` only for
+display.
+
+```js
+function Card({ server }) {
+  const h = api.React.createElement;
+
+  return h('div', { className: 'bg-white border rounded-xl p-5' }, 'Hello, server ' + server.id);
+}
+
+api.slot('server.settings', Card, { order: 5 });
+```
+
+Lower `order` renders first; components at the same order are sorted by extension id, so the arrangement is
+stable rather than depending on which script loaded first. An unknown slot name, or something that is not a
+component, is reported and ignored.
+
+## Server pages
+
+A server page adds an entry to the menu of **every** server, and a route to render it at
+`/server/<id>/ext/<extension>/<path>`.
+
+<TypeTable
+  type={{
+    path: {
+      description: 'The last part of the address. Letters, digits, `-`, `_` and `/`, up to 60 characters — `hello`, or `tools/cleanup`.',
+      type: 'string',
+      required: true,
+    },
+    label: { description: 'What the menu entry says.', type: 'string', required: true },
+    component: { description: 'The component to render.', type: 'React component', required: true },
+    permission: {
+      description: 'The permission a person needs on the server to see the page. A string or a list of strings. Omit it and everybody who can see the server sees it.',
+      type: 'string | string[]',
+    },
+  }}
+/>
+
+```js
+function Hello({ server }) {
+  const h = api.React.createElement;
+  const [text, setText] = api.React.useState('...');
+
+  api.React.useEffect(() => {
+    api.http.get('/api/client/extensions/my-extension/servers/' + server.uuid + '/message')
+      .then((response) => setText(response.data.message || 'Nothing set'));
+  }, [server.uuid]);
+
+  return h('div', { className: 'p-5' }, text);
+}
+
+api.serverPage({ path: 'hello', label: 'Hello', component: Hello });
+```
+
+Registering the same `path` twice for the same extension replaces the first one, so a page definition can be
+corrected without the menu growing a duplicate.
+
+<Callout type="info">
+  `permission` hides the menu entry, but it is **not** a security check on its own — always check the permission
+  on the [route](/docs/stratosphere/extensions/routes#checking-permissions-yourself) too. Hiding a link does not
+  stop anyone who knows the URL.
+</Callout>
+
+## The http client
+
+`api.http` is the panel's own axios instance:
+
+```js
+// GET with hooks and errors handled the way the panel handles them.
+const response = await api.http.get('/api/client/extensions/my-extension/hello');
+
+// POST with a body.
+await api.http.post(url, { message: 'Back at 9pm' });
+```
+
+Use the paths the panel serves: client routes are `/api/client/extensions/<id>/...`, and public ones are
+`/api/extensions/<id>/...`. Requests carry the session and CSRF token, and the panel's interceptors turn a
+failed request into an error your `catch` can read:
+
+```js
+api.http.put(url, { message }).catch((error) => {
+  // Validation failures arrive in the panel's own shape:
+  // error.response.data.errors[0].detail
+  const detail = error?.response?.data?.errors?.[0]?.detail;
+  setStatus(detail || 'It could not be saved.');
+});
+```
+
+## How files are served
+
+Your `web/` files are served by the panel from `/extensions/<id>/assets/<file>` with `?v=<version>`, and only
+files listed in the manifest are loaded. A URL that points outside your own `web/` folder is refused, so
+`web.scripts` cannot reach the rest of the panel.
+
+Because the URL carries the version, **bumping `version` in the manifest is what makes a browser pick up a
+changed script or stylesheet.** While developing, hard-reload, or bump the version.
+
+Styles you add are loaded on every page, so namespace them. The example extension prefixes its classes
+(`offline-motd-card`) rather than styling bare elements.
+
+## Next
+
+<Cards>
+  <Card title="A worked example" href="/docs/stratosphere/extensions/example">
+    These pieces together in one extension
+  </Card>
+  <Card title="Building and packaging" href="/docs/stratosphere/extensions/building">
+    Minifying and packing your web files
+  </Card>
+</Cards>
