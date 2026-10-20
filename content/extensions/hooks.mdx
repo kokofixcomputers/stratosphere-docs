@@ -103,7 +103,7 @@ $this->context->filter('router.state', function (array $state, Server $server) {
 
 The `notice` key is the one to add: a `label` and a `message`, which the router shows in the server list and
 when a player tries to join. This is exactly what the
-[worked example](/docs/stratosphere/extensions/example) does, with the message coming from a setting and from
+[worked example](/docs/extensions/example) does, with the message coming from a setting and from
 what the server's owner wrote.
 
 <Callout type="warn">
@@ -132,16 +132,16 @@ $this->context->filter('site.configuration', function (array $configuration) {
 const { enabled, max } = window.SiteConfiguration.my_extension ?? {};
 ```
 
-For a value that only one server's page needs, an ordinary [client route](/docs/stratosphere/extensions/routes)
+For a value that only one server's page needs, an ordinary [client route](/docs/extensions/routes)
 is usually better: it is permission-checked and carries the login.
 
 ## Next
 
 <Cards>
-  <Card title="Routes" href="/docs/stratosphere/extensions/routes">
+  <Card title="Routes" href="/docs/extensions/routes">
     Where the values your browser code needs come from
   </Card>
-  <Card title="The browser API" href="/docs/stratosphere/extensions/browser-api">
+  <Card title="The browser API" href="/docs/extensions/browser-api">
     Slots and server pages, the places your components go
   </Card>
 </Cards>

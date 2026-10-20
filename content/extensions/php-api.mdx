@@ -27,9 +27,9 @@ as little as possible in either — listen, add routes, and do the real work whe
 Neither is required, but almost every extension uses one:
 
 - **`register()`** — called first. This is where you call `filter()` and `on()` to listen to
-  [hooks](/docs/stratosphere/extensions/hooks).
+  [hooks](/docs/extensions/hooks).
 - **`boot()`** — called when everything is registered. This is where you add
-  [routes](/docs/stratosphere/extensions/routes).
+  [routes](/docs/extensions/routes).
 
 Opening a database connection or reading a file in `register()` slows down every request in the panel, not just
 the ones your extension answers.
@@ -52,8 +52,8 @@ the ones your extension answers.
     settings: { description: 'Every setting at once, as an associative array.', type: 'array' },
     store: { description: 'Your key/value store. See [the store](#the-store).', type: 'ExtensionStore' },
     log: { description: 'The panel\'s logger, writing to `storage/logs` like everything else.', type: 'LoggerInterface' },
-    filter: { description: 'Change a value of the panel. See [Hooks](/docs/stratosphere/extensions/hooks).', type: 'void' },
-    on: { description: 'Be told that something happened. See [Hooks](/docs/stratosphere/extensions/hooks).', type: 'void' },
+    filter: { description: 'Change a value of the panel. See [Hooks](/docs/extensions/hooks).', type: 'void' },
+    on: { description: 'Be told that something happened. See [Hooks](/docs/extensions/hooks).', type: 'void' },
     clientRoutes: { description: 'Routes for logged-in people, under `/api/client/extensions/<id>/`.', type: 'void' },
     adminRoutes: { description: 'Pages and actions for admins, under `/admin/extensions/<id>/x/`.', type: 'void' },
     publicRoutes: { description: 'Routes with no login at all, under `/api/extensions/<id>/`.', type: 'void' },
@@ -174,10 +174,10 @@ STRATOSPHERE_EXTENSIONS=false
 ## Next
 
 <Cards>
-  <Card title="Hooks" href="/docs/stratosphere/extensions/hooks">
+  <Card title="Hooks" href="/docs/extensions/hooks">
     The four places the panel asks extensions what to do
   </Card>
-  <Card title="Routes" href="/docs/stratosphere/extensions/routes">
+  <Card title="Routes" href="/docs/extensions/routes">
     Client, admin and public routes, and what protects each one
   </Card>
 </Cards>

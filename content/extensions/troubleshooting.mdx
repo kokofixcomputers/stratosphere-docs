@@ -70,7 +70,7 @@ panel.
     `dashboard.top` — nothing else exists.
   </Accordion>
   <Accordion title="A permission is hiding it">
-    A [server page](/docs/stratosphere/extensions/browser-api#server-pages) with a `permission` only shows for
+    A [server page](/docs/extensions/browser-api#server-pages) with a `permission` only shows for
     people who have it. Check with an owner or a root admin.
   </Accordion>
 </Accordions>
@@ -130,7 +130,7 @@ php artisan p:extension:disable my-extension
 ## "It was working, then I updated the panel"
 
 An extension is PHP inside the panel, so it can use anything in the panel — and anything in the panel can
-change between versions. The parts that are **stable** are the four [hooks](/docs/stratosphere/extensions/hooks)
+change between versions. The parts that are **stable** are the four [hooks](/docs/extensions/hooks)
 and the methods on `$this->context`. If you depend on something else, an update can change it under you.
 
 If an update broke an extension, the reason is in the log. If the extension is not yours, tell its author; if it
@@ -139,7 +139,7 @@ is, prefer the context and the hooks where they will do.
 ## Next
 
 <Cards>
-  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+  <Card title="The PHP API" href="/docs/extensions/php-api">
     The stable surface to build on
   </Card>
   <Card title="Extensions administration" href="/docs/stratosphere/admin/extensions">

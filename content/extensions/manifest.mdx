@@ -200,7 +200,7 @@ runs everything in it:
 
 The folder must be inside the extension, and nothing runs `down()` — the panel only ever migrates forward. When
 the extension is removed *and* purged, its tables are yours to drop through a migration the admin runs, so
-prefer the [store](/docs/stratosphere/extensions/php-api#the-store) when it will do.
+prefer the [store](/docs/extensions/php-api#the-store) when it will do.
 
 ## What is rejected
 
@@ -215,10 +215,10 @@ These are refused, because they would let an extension reach outside its own fol
 ## Next
 
 <Cards>
-  <Card title="The PHP API" href="/docs/stratosphere/extensions/php-api">
+  <Card title="The PHP API" href="/docs/extensions/php-api">
     Everything $this->context gives the class named by php.main
   </Card>
-  <Card title="Building and packaging" href="/docs/stratosphere/extensions/building">
+  <Card title="Building and packaging" href="/docs/extensions/building">
     How extension.json gets checked before the .stratext is built
   </Card>
 </Cards>
