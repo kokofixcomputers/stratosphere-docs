@@ -1,0 +1,61 @@
+---
+title: Nodes and Wings
+description: Install Stratosphere Wings on a node, set it up in one command, and let it update itself from the panel.
+---
+
+## About Stratosphere Wings
+
+A node runs **Wings**, the service that starts and manages the game server containers. Stratosphere uses its own build, [stratwings](https://github.com/kokofixcomputers/stratwings), which knows how to update itself when the panel asks.
+
+## Install Wings on the machine
+
+Download the binary for your architecture and make it executable. Use `wings_linux_amd64` on x86_64 and `wings_linux_arm64` on ARM.
+
+```bash
+sudo curl -L -o /usr/local/bin/wings https://github.com/kokofixcomputers/stratwings/releases/download/nightly/wings_linux_amd64
+sudo chmod +x /usr/local/bin/wings
+```
+
+## Set up a node in one command
+
+The recommended flow lets the panel write the configuration for you:
+
+1. Make the node in the panel (**Admin > Nodes > Create Node**) and fill in its address and ports.
+2. Open the node's **Configuration** tab and press **Generate Token**.
+3. Run the `wings install ...` line the panel shows on the node machine.
+
+That line writes the configuration, installs the systemd service if there is none, and starts Wings. From then on the node is managed from the panel.
+
+## Let nodes update themselves
+
+Stratosphere Wings updates itself when the panel asks:
+
+- **Admin > Nodes > Update nodes** updates every node, one after the other. A node's own page has **Update Wings** next to its version.
+- The nodes list shows each node's Wings version and marks old ones.
+- The node downloads `wings_linux_<arch>` and `checksums.txt` of the nightly release, checks the hash, starts the new binary once with `version`, keeps the old one as `wings.old`, and restarts in place. **Servers keep running.** If the new Wings fails to stay up three times, the old one is put back by itself.
+- This needs the `nodes.software` permission (root admins have it).
+
+<Callout type="info" title="Where the download comes from">
+  `WINGS_UPDATE_URL` in the panel's `.env` is only used to look up the newest version. The nodes use
+  their own `WINGS_UPDATE_URL` environment variable, which defaults to the nightly release of
+  stratwings.
+</Callout>
+
+<Callout type="warn" title="Old Wings binaries">
+  A node whose Wings predates this feature (the original Wings, or a build of the fork from before
+  self-update) answers "too old to update itself". Replace its binary once by hand, and from then on
+  it updates itself.
+</Callout>
+
+Replace the old binary by hand once:
+
+```bash
+sudo curl -fL -o /usr/local/bin/wings.new https://github.com/kokofixcomputers/stratwings/releases/download/nightly/wings_linux_amd64   # arm64 on ARM
+sudo chmod +x /usr/local/bin/wings.new && sudo mv /usr/local/bin/wings.new /usr/local/bin/wings && sudo systemctl restart wings
+```
+
+## Related pages
+
+- [Updating](/docs/stratosphere/getting-started/updating) — the panel, router and edge update flow.
+- [Admin: Updates](/docs/stratosphere/admin/updates) — the in-panel updater.
+- [Troubleshooting](/docs/stratosphere/troubleshooting) — when a node will not come up.

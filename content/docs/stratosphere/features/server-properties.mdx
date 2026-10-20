@@ -1,0 +1,33 @@
+---
+title: Server Properties
+description: Edit server.properties with a typed editor and MOTD builder, or configure a Velocity proxy in the same tab.
+---
+
+The **Properties** tab is a typed editor for `server.properties`. Instead of a wall of text, every setting is shown as the kind of control it needs, so mistakes are harder to make.
+
+## The typed editor
+
+- **Switches** for true/false settings such as `online-mode` or `pvp`.
+- **Typed fields** for numbers and text, so a value is checked before it is saved.
+- A **search box** to jump straight to a setting by name.
+
+The values are the ones written to `server.properties` in the server root, so what you see is what the server reads on its next start.
+
+## The MOTD builder
+
+The server message of the day (`motd`) gets its own builder. You can add **colors and formatting**, so the message the player sees in the multiplayer list is styled the way you want rather than typed as raw `§` codes.
+
+## Velocity proxy settings
+
+On a **Velocity** server the Properties tab does not show `server.properties`. It becomes a configurator for `velocity.toml` instead, with:
+
+- **drag to reorder** the backend servers,
+- **forced hosts**,
+- the **forwarding mode**,
+- and the **secret**.
+
+Changing these keeps the proxy and the servers behind it in step, so you do not have to edit the TOML file by hand.
+
+<Callout type="info">
+Editing properties is a server file change. Keep your permissions in mind: whoever can edit files can edit these settings.
+</Callout>

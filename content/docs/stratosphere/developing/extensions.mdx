@@ -1,0 +1,122 @@
+---
+title: Extensions
+description: Build, package and install a Stratosphere extension.
+---
+
+An extension adds to the panel without changing its files: new API routes, admin pages, settings, a card on a server's Settings page, a page in the server menu, or a change to what the Minecraft router is told. It is a `.stratext` file — a zip with `extension.json` at its top. An extension is PHP and JavaScript that runs as part of the panel with the same access to everything in it, so install only extensions from people you trust.
+
+## Start from the template
+
+```bash
+npm run ext:new -- my-extension "My Extension"
+```
+
+This copies `extensions/_template` to `extensions/my-extension`. The template's `README.md` is the full developer reference for the manifest, the PHP context, the hooks, the routes and the browser API. `extensions/offline-motd/` is a complete, small example that touches everything: a hook that changes what the router says, routes of its own, a stored value per server and a settings card.
+
+## Folder layout
+
+<Files>
+  <File name="extension.json" />
+  <Folder name="src" />
+  <Folder name="web" />
+  <Folder name="database/migrations" />
+</Files>
+
+- `extension.json` — the manifest: who the extension is, what it adds and which settings an admin can set.
+- `src/` — the PHP. `php.main` is the class the panel starts; it extends `Pterodactyl\Extensions\Extension`.
+- `web/` — what runs in the browser. Only the files listed in `web.scripts` and `web.styles` are loaded.
+- `database/migrations/` — optional migrations the installer runs when you name the folder under `"migrations"`.
+
+## The manifest
+
+```json
+{
+  "api": 1,
+  "id": "my-extension",
+  "name": "My Extension",
+  "version": "1.0.0",
+  "description": "...",
+  "author": "...",
+  "homepage": "https://...",
+  "license": "MIT",
+  "php": { "main": "Vendor\\Name\\Main", "autoload": { "Vendor\\Name\\": "src/" } },
+  "web": { "scripts": ["web/index.js"], "styles": ["web/style.css"] },
+  "migrations": "database/migrations",
+  "settings": [
+    { "key": "x", "label": "X", "type": "text", "default": "", "help": "..." }
+  ]
+}
+```
+
+- `api` must be `1`. `id` is `a-z`, `0-9` and `-`, 3 to 48 characters, and never changes. `version` is `x.y.z`.
+- A setting type is one of `text`, `textarea`, `number`, `boolean`, `select` or `password`. `select` takes `"options"`, `number` takes `min` and `max`, `textarea` takes `rows`, and text and textarea take `max_length`. Read a setting with `$this->context->setting('key')`.
+
+## Build and package
+
+```bash
+npm run ext:build -- extensions/my-extension
+```
+
+This checks the manifest the same way the installer does, minifies the JavaScript and CSS under `web/` and writes `dist/extensions/my-extension-1.0.0.stratext`. Add `--no-minify` to leave the browser files as they are. A `.stratext` is just a zip with `extension.json` at the top, so you can also zip the folder yourself.
+
+## Install and manage
+
+```bash
+php artisan p:extension:install path/to/my-extension-1.0.0.stratext --enable
+```
+
+Extensions live in `storage/extensions/`, which survives a panel update. Installing the same extension again needs `--force`; its settings, on/off state and stored data are kept. See [Extensions administration](/docs/stratosphere/admin/extensions).
+
+## The PHP side
+
+The main class gets `$this->context`:
+
+| Method | What it does |
+|---|---|
+| `filter($hook, fn)` / `on($hook, fn)` | Change a value of the panel / be told that something happened. |
+| `clientRoutes(fn)` | Routes for logged-in people at `/api/client/extensions/<id>/`. |
+| `adminRoutes(fn)` | Pages for admins at `/admin/extensions/<id>/x/`. |
+| `publicRoutes(fn)` | No login, at `/api/extensions/<id>/`. Rate limited, so check what comes in. |
+| `setting($key)`, `settings()` | What the admin set. |
+| `store()` | Your own key/value store (`get`, `put`, `forget`, `all`, `has`), no migration needed. |
+| `path($file)`, `log()`, `manifest()` | Your folder, the logger and your manifest. |
+
+## Hooks
+
+The hooks are defined in `app/Extensions/Hooks.php`:
+
+| Hook | Value | What it is for |
+|---|---|---|
+| `router.state` | array, with the `Server` and `ServerDomain` | What the Minecraft router is told about a server. Add `notice => [label, message]` to change what players see while the server cannot be joined. |
+| `router.domains` | array | The list of domains the router is given. |
+| `server.attributes` | array, with the `Server` and the `User` | What the client API tells about a server. |
+| `site.configuration` | array | What the pages get in `window.SiteConfiguration`. |
+
+A filter must return the same kind of value it was given (an array stays an array). You can use the rest of the panel too: it is PHP in the panel, so models, services, events and the `Route` facade are all available.
+
+## Routes
+
+- **Client routes** are for logged-in people. In `clientRoutes`, `{server}` is already the `Server` model (found by uuid, like everywhere in the client API), so type the argument as `Server $server`. Check permissions yourself, for example `$request->user()->can(Permission::ACTION_SETTINGS_RENAME, $server)`.
+- **Admin routes** are behind the admin login. Protect each one with the panel's `admin.can:<permission>` middleware, for example `->middleware('admin.can:settings.general.view')`. Several permissions mean holding any one is enough, and `admin.can:root` is for the few things only root admins may do.
+- **Public routes** need no login and are only rate limited, so validate and check everything that comes in.
+
+Routes are added while the panel starts, so they are not there when Laravel's route cache is used. Do not run `php artisan route:cache` on a panel with extensions that add routes.
+
+## The browser API
+
+```js
+Stratosphere.register({ id: 'my-extension', setup(api) { /* ... */ } })
+```
+
+`api` has `React` and `http` (the panel's own client, so hooks work and requests carry the login), plus:
+
+- `api.slot(name, Component, { order })` puts a component on a page. The slots are `server.console` and `server.settings` (props: `{ server: { id, uuid } }`) and `dashboard.top`.
+- `api.serverPage({ path, label, component, permission })` adds a page to the menu of every server, at `/server/<id>/ext/<extension>/<path>`.
+
+## Testing
+
+`npm run ext:build` performs the manifest checks that can be made without the panel before it packs the folder, so a broken manifest fails the build. To test the extension itself, install it on a panel with `--enable` and use it.
+
+## When something goes wrong
+
+The panel never stops for an extension. An error in `register()`, `boot()`, a hook, a route or a component is caught, the extension is left out of that request and the reason is shown on the Extensions page and written to `storage/logs`. An extension that kills PHP outright is turned off by the next request. If the panel does not work at all, set `STRATOSPHERE_EXTENSIONS=false` in `.env` (nothing is started) or run `php artisan p:extension:disable <id>`.

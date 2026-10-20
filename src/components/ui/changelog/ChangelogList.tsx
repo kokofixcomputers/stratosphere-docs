@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { parseBlocks, renderBlocks } from './markdown';
 import type { ReleaseSummary } from '@/lib/github-releases';
+import { site } from '@/lib/site';
 
 
 export default function ChangelogList({ releases }: { releases: ReleaseSummary[] }) {
@@ -12,11 +13,6 @@ export default function ChangelogList({ releases }: { releases: ReleaseSummary[]
 
   return (
     <section className="space-y-6">
-      <div className="rounded-3xl border border-fd-border bg-fd-app-bg/80 p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold">Hydrodactyl Release Notes (v6+)</h2>
-        <p className="max-w-3xl text-sm text-fd-muted-foreground">View our latest releases!</p>
-      </div>
-
       {visible.length ? (
         <div className="space-y-6">
           {visible.map((release) => (
@@ -25,7 +21,7 @@ export default function ChangelogList({ releases }: { releases: ReleaseSummary[]
                 <p className="text-sm text-fd-muted-foreground">
                   {release.publishedAt ? new Date(release.publishedAt).toLocaleDateString() : 'Unknown date'}
                 </p>
-                <h3 className="text-xl font-semibold">{release.tagName}</h3>
+                <h3 className="font-display text-xl font-semibold">{release.tagName}</h3>
               </div>
 
               <div className="mt-6 text-sm leading-6 text-fd-foreground">
@@ -40,16 +36,29 @@ export default function ChangelogList({ releases }: { releases: ReleaseSummary[]
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
-              href="/docs/hydrodactyl/changelog/v5"
+              href={`${site.docsPath}/changelog/history`}
               className="inline-flex items-center justify-center rounded-2xl border border-fd-border bg-fd-app-bg/80 px-4 py-3 text-sm font-medium transition hover:bg-fd-muted/40"
             >
-              Older releases (before v6)
+              Full version history
             </Link>
           </div>
         </div>
       ) : (
         <div className="rounded-3xl border border-fd-border bg-fd-app-bg/80 p-6 text-sm text-fd-muted-foreground">
-          No releases found.
+          No tagged releases yet. The panel is currently published as{' '}
+          <strong className="font-semibold text-fd-foreground">nightly</strong>{' '}
+          builds every time <code className="font-mono text-brand">1.0-develop</code>{' '}
+          changes —{' '}
+          <a
+            href={`https://github.com/${site.github.owner}/${site.github.repo}/releases`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand hover:underline"
+          >
+            see the releases page
+          </a>{' '}
+          for those. Tagged releases appear here automatically once they are
+          published.
         </div>
       )
       }

@@ -1,0 +1,51 @@
+---
+title: Dashboard
+description: Search, filter, sort and organize your servers with folders and stars.
+---
+
+## Searching your servers
+
+The server list on the dashboard can be searched, filtered, sorted and organized into folders.
+
+The search field looks in the **name**, **description**, **address** and **node** of each server. Every word you type has to match. Press `Esc` to clear it.
+
+## Filters
+
+Filters narrow the list:
+
+- **Online**, **Offline** and **Other**. "Other" covers starting, stopping, suspended, installing, and servers on a node in maintenance.
+- **Starred** servers.
+- **Owned by me** or **shared with me**. The shared option only appears when at least one server is shared with you.
+- **Node**, shown only when you have servers on more than one node.
+
+The state a filter uses comes from the same numbers the rows show. The dashboard reads **all** of your servers, not only the ones on screen: it checks five at a time, every 30 seconds.
+
+## Sorting
+
+You can sort by **name** or by **running servers first**. Name sorting uses natural order, so `Lobby 2` comes before `Lobby 10`. Starred servers always come first.
+
+## Folders and stars
+
+Folders are per person and kept on the panel (`dashboard_folders`, `dashboard_server_prefs`), so they follow you to another browser. A server can be in one folder at a time.
+
+- Use the folder button on a server, drag a server onto a folder, or create a folder from a server's menu.
+- A folder can be renamed, moved up or down, folded (remembered in your browser) and deleted. Deleting a folder keeps its servers.
+- You can have at most **50** folders.
+- Another user of the same server has their own folders and stars.
+
+## Other users' servers
+
+Admins also see **Others' servers**. That list stays paged and is searched by the panel. Those servers have no folders or stars.
+
+Your own servers load 100 at a time, up to 1000.
+
+## API
+
+Client routes. `GET /api/client/dashboard` returns the folders and starred servers:
+
+- `POST /dashboard/folders`
+- `PATCH /dashboard/folders/{id}` and `DELETE /dashboard/folders/{id}`
+- `POST /dashboard/folders/order`
+- `PUT /dashboard/servers/{uuid}` with `folder` (an id or null) and/or `starred`
+
+Every call answers with the whole layout. A server you cannot reach, or a folder of someone else, is a 404.

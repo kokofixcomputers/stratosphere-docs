@@ -1,5 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { BookOpenIcon } from '@heroicons/react/24/solid';
+import StratosphereLogo from '@/components/ui/StratosphereLogo';
+import { githubUrl, site } from '@/lib/site';
 
 /**
  * Shared layout configurations
@@ -9,9 +11,8 @@ export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
       <div className="flex items-center gap-2">
-        <svg className="flex h-6 w-6 shrink-0" width="100" height="92" viewBox="0 0 100 92" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_136_35)"><path d="M35.1293 92L39.2242 59.3897L44.8276 60.4695L14.2241 81.2019L0 57.0141L32.7586 45.3521V47.7277L0 33.4742L14.2241 8.85446L45.6896 33.2582L39.2242 34.1221L34.4828 0H65.5172L61.4225 33.9061L56.681 32.8263L85.7759 8.85446L100 33.4742L66.1638 47.7277V45.5681L99.569 57.0141L85.3448 81.2019L57.5431 59.3897H61.638L66.1638 92H35.1293Z" fill="#52A9FF"></path></g><defs><clipPath id="clip0_136_35"><rect width="100" height="92" fill="white"></rect></clipPath></defs></svg>
-
-        <span className="font-semibold">Hydrodactyl</span>
+        <StratosphereLogo className="h-6 w-6 shrink-0 text-brand" />
+        <span className="font-display font-semibold tracking-tight">{site.name}</span>
       </div>
     ),
   },
@@ -19,9 +20,9 @@ export const baseOptions: BaseLayoutProps = {
     {
       icon: <BookOpenIcon className="w-4 h-4" />,
       text: 'Docs',
-      url: '/docs/hydrodactyl',
+      url: site.docsPath,
       active: 'nested-url',
     },
   ],
-  githubUrl: 'https://github.com/blueprintframework/hydrodactyl',
+  githubUrl,
 };

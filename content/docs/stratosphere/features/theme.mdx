@@ -1,0 +1,29 @@
+---
+title: Theme
+description: Switch between device, light and dark themes.
+---
+
+The panel has a light and a dark theme. The theme button in the top bar cycles through three choices: **device** (follow the operating system), **light** and **dark**.
+
+The choice is kept in your browser in `localStorage`, under the key `stratosphere:theme`, so it stays with the browser you picked it in.
+
+## No flash
+
+The page sets the theme class before it is drawn, so there is no flash of the wrong theme when a page loads.
+
+## What follows the theme
+
+Most of the interface follows the theme automatically, without a `dark:` prefix on every element. That includes:
+
+| What | How it follows the theme |
+| --- | --- |
+| Console (xterm) | The terminal theme is set on the theme change |
+| File editor (Monaco) | The `panel` and `panel-dark` themes |
+| Charts, ring gauges, sparklines | The theme colours in the SVG and canvas styles |
+| Sign in icons | GitHub uses the text colour; the other marks keep their brand colours |
+| Embedded tools (Tools tab, Superflat) | The dark or light colours, and the mode, are sent to the tool |
+| Logo and favicon | Uploaded pictures, shown as they are |
+
+## The admin area
+
+The Blade admin area (`/admin`) is built on AdminLTE and has no dark theme yet, so it stays light whatever you pick.

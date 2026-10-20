@@ -1,0 +1,8 @@
+{
+  "title": "Stratosphere",
+  "description": "Documentation for the Stratosphere game server panel",
+  "icon": "stratosphere",
+  "pages": ["index", "getting-started", "features", "comparison", "admin", "developing", "troubleshooting", "changelog"],
+  "root": true,
+  "defaultOpen": true
+}

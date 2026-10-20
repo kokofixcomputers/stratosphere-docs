@@ -1,0 +1,31 @@
+---
+title: Console
+description: Read and use the server console with color-coded output, search, full-screen mode, tab completion, and a live TPS clock.
+---
+
+The **Console** page is where you watch the server and send commands. It is built for long log files: output is color-coded, searchable and readable full screen.
+
+## Reading the output
+
+- **Warnings and errors are color-coded**, so a problem stands out from the ordinary log lines.
+- **A copy button per block** copies that piece of output without selecting it by hand.
+- **Search** finds a line in the log.
+- **Full-screen mode** gives the console the whole window.
+
+## Tab completion
+
+While you type a command, the console completes it from the server's command tree in `stratosphere.commands.json`. The file is written by the plugin or mod into the server root and lets every command of every plugin and mod, with its sub commands and arguments, be completed. Because it is a plain file, the panel can use it even while the server is stopped and the plugin is not running.
+
+When the file is missing or invalid, the panel falls back to its built-in list of vanilla and Paper commands. See [Commands JSON](/docs/stratosphere/developing/commands-json) for the format.
+
+The panel also checks the file's `generatedAt` time against the newest jar in `plugins/` and `mods/`, and shows a note when the list looks out of date. When the plugin announces that the commands changed, the console refreshes the list without a page reload.
+
+## TPS, MSPT and weather
+
+When the [Stratosphere helper](/docs/stratosphere/features/helper) is installed, the top of the console shows a **clock** and the current **weather**. They come from the helper's `perf` event:
+
+- **TPS** is the average over the last 1, 5 and 15 minutes, never above 20.
+- **MSPT** is over the last 100 ticks (a server that cannot report more gives only the average).
+- With protocol 8, the event also carries the main world's time of day, day number, rain and thunder.
+
+A server that can report neither (such as Folia) answers that performance is not supported, and the panel shows no numbers. The panel asks for an update every 5 seconds while the console page is open and the server is running, and moves the clock on between two answers at the speed it measured.

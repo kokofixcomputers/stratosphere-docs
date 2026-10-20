@@ -1,0 +1,23 @@
+{
+  "title": "Features",
+  "pages": [
+    "index",
+    "dashboard",
+    "software",
+    "server-properties",
+    "mods-and-plugins",
+    "console",
+    "players",
+    "helper",
+    "files",
+    "jobs",
+    "importer",
+    "schedules",
+    "domains",
+    "auto-sleep",
+    "cpu-burst",
+    "self-service",
+    "search",
+    "theme"
+  ]
+}

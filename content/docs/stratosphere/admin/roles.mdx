@@ -1,0 +1,57 @@
+---
+title: Roles
+description: Give admins limited access with roles instead of making everybody a root admin.
+---
+
+## Root admins
+
+Root admins are the accounts that were admins before roles existed. They can do everything and cannot be limited by anything on this page. Only a root admin can make another root admin.
+
+Everybody else is an ordinary user until a role is given to them.
+
+## Roles
+
+Create and edit roles under **Admin > Roles**. A role has:
+
+- a **name** and a **color**;
+- a set of **permissions**, grouped by area.
+
+The permission groups are overview; users; roles; servers; nodes; locations; database hosts; nests and eggs; mounts; extensions; and the settings pages. Each settings page has its own "see" and "change" pair, for example `settings.mail.view` and `settings.mail.update`.
+
+A role page lists the people who have it, and gives it to more people by **username or email**. A user's own page has a Roles box too.
+
+## How permissions add up
+
+- **A verb includes "see".** Holding `servers.delete` also gives `servers.view`, and `settings.mail.update` also gives `settings.mail.view`. The editor ticks the view permission for you.
+- **Several roles add up.** Somebody with more than one role holds every permission of all of them.
+- **The sidebar only shows what a person can open**, and they land on the first page they may open. Changes to a role apply to its members on their next request.
+- **`servers.access` is different** from the admin pages: it opens every server in the panel itself with full control, like its owner.
+
+## What stays root-only
+
+- The **Application API** (API keys) is for root admins only, and API keys are not limited by roles.
+- The **root admin flag** itself stays with root admins. Only root admins make root admins.
+
+## Nobody gets more than they hold
+
+- A role can only hold permissions that the person making or changing it holds.
+- A role can only be changed, deleted, given or taken away by somebody who holds all of its permissions.
+- The account of a root admin, or of somebody who holds permissions you do not, cannot be edited, deleted or given roles by you (with its email or password you would hold those permissions too).
+
+## Activity log
+
+Every change is written to the activity log with these events:
+
+- `role:create`
+- `role:update`
+- `role:delete`
+- `role:assign`
+- `role:revoke`
+
+## For developers
+
+- `$user->hasPermission('servers.view')` is true for root admins and for users whose roles hold the permission.
+- Admin routes carry `->middleware('admin.can:<permission>')`. Several permissions, comma separated, mean any of them; `admin.can:root` is for root admins only.
+- A test fails when an admin route has no permission, or when a permission is not used by anything.
+- New permissions go in `app/Services/Roles/PermissionRegistry.php`.
+- The `admin.can` middleware is also available to extensions that add admin routes. See [Extensions](/docs/stratosphere/developing/extensions).

@@ -1,0 +1,46 @@
+---
+title: Mods & Plugins
+description: Browse and install mods, plugins, data packs, resource packs and worlds from Modrinth and CurseForge.
+---
+
+The server's content page is where you browse and install add-ons. Two sources are available: **Modrinth** and, when it is set up, **CurseForge**.
+
+## Modrinth
+
+From Modrinth you can browse and install:
+
+- mods,
+- plugins,
+- data packs,
+- resource packs,
+- worlds,
+- and modpacks.
+
+A project page shows its description, screenshots and versions with changelogs. Install puts the file in the right place on the server for you.
+
+## CurseForge
+
+With an API key from [console.curseforge.com](https://console.curseforge.com/), every server's content page gets a **CurseForge** tab next to Modrinth. It offers mods, plugins, data packs, resource packs and worlds, with descriptions, screenshots, versions and changelogs, and CurseForge's own categories, loaders and Minecraft versions. It also gives the mods in the file manager their icons.
+
+An admin sets the key in **Admin > Settings > CurseForge**, as described on the [settings page](/docs/stratosphere/admin/settings). The panel checks the key with CurseForge right away and there is a button to check it again. The key is stored encrypted in the settings table and is never sent to a browser. Without a key, nothing about CurseForge appears. A key in the environment (`CURSEFORGE_API_KEY`) is used when no key was saved.
+
+<Callout type="info" title="CurseForge ids">
+Ids from CurseForge start with `cf:` (`cf:394468`) so they never mix with Modrinth ids, in the address, in the records of installed projects (`stratosphere.json`) and in the dependency planner.
+</Callout>
+
+## Installing and detecting files
+
+- **Dependencies** are installed like on Modrinth: what a file lists as required (relation type 3) is offered with it.
+- **Authors can keep their files off other sites.** Those files have no download address and show a link to CurseForge instead of an install button.
+- **Detect existing** on the installed tab, and the icons in the file manager, recognise files by fingerprint: MurmurHash2, seed 1, over the bytes of the file without the tab, line feeds and space. It is computed in the browser. Modrinth is asked first, and CurseForge only about what Modrinth does not know.
+
+## Worlds and modpacks
+
+- **Worlds** are downloaded and unpacked into their own folder next to the others, the same as a world from a link. The archive has to be a `.zip` or `.tar.gz` and the **server has to be stopped**.
+- **Modpacks** are installed from Modrinth only. CurseForge modpacks use a different format with a list of files to fetch, so they are not installed from there.
+
+## Limits
+
+A search shows at most **10,000 results**, which is as far as CurseForge answers.
+
+Every download is handled as a background **job** on the node, so you can leave the page while it runs. See [Jobs](/docs/stratosphere/features/jobs).

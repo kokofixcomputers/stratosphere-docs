@@ -1,0 +1,55 @@
+---
+title: Jobs
+description: Long-running work on a node, shown in the job box in the corner of a server.
+---
+
+Work that takes a while runs as a **job** on the node, not in the browser and not in a request. You can close the page, reload it or come back the next day: the node goes on, and what it did is still there.
+
+## What runs as a job
+
+- **Imports** from another server (see [Importer](/docs/stratosphere/features/importer)).
+- **Archives** (compress) and **extractions** (decompress).
+- **Downloads**: mods, plugins, worlds, modpacks, and "pull" in the file manager.
+
+## The job box
+
+A small box in the bottom right corner of a server's pages shows jobs while they run and afterwards. It only appears when there is a job, finished ones included, it can be folded away, and it has **Clear all completed**.
+
+Each job shows:
+
+- A bar (files or bytes) and the numbers.
+- The file it is on.
+- What it made, such as the name of an archive.
+- A list of the files that could not be done and why.
+
+**Cancel** stops a job that is going; what was done before the cancel is kept. **Remove** forgets a job that is over.
+
+## Rules per kind of job
+
+- **Imports**: one at a time per server. They start from the Importer page.
+- **Archives and extractions**: one of the two at a time per server. The file manager follows the job and shows the new archive when it is done. Progress is the bytes of the files archived, or of the archive read.
+- **Downloads**: three files at a time for the whole server (the limit of a node). A failed file is tried again twice; files that still fail are listed and do not hold up the others. Quick downloads that went well disappear from the list after 10 minutes. Things that happen after the download, such as a modpack's own steps once its files are in, still run in the page.
+
+## Where jobs are kept
+
+Jobs are kept on the node in `<root_directory>/.jobs`: the last 20 of a server for 14 days.
+
+A job that was going when the node restarted shows as **Interrupted**, with what had been done. Running an import again with *Replace files* off continues with what is missing.
+
+## Permissions and requirements
+
+- Seeing the jobs needs `file.read`.
+- Stopping one needs `file.create`, `file.archive` or `file.update`.
+- Starting needs the permission of the action as before: `file.create` for downloads and imports, `file.archive` for archives.
+
+Jobs need the Wings of Stratosphere (see [Updates](/docs/stratosphere/admin/updates)). A node without it says so and asks you to update Wings.
+
+## API
+
+Client routes:
+
+- `GET /api/client/servers/{uuid}/jobs` and `DELETE /api/client/servers/{uuid}/jobs/{id}`
+- `POST /api/client/servers/{uuid}/jobs/import`
+- `POST /api/client/servers/{uuid}/jobs/pull`
+
+Compress and extract keep their `files/compress`, `files/decompress` and `files/task/{id}` routes, which now start and follow jobs.

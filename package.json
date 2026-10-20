@@ -1,12 +1,15 @@
 {
-  "name": "hydrodactyl-documentation",
+  "name": "stratosphere-documentation",
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "generate:source": "fumadocs-mdx && node scripts/compile-config.js",
+    "prebuild": "pnpm generate:source",
     "build": "next build",
+    "predev": "pnpm generate:source",
     "dev": "next dev",
     "start": "next start",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "pnpm generate:source"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

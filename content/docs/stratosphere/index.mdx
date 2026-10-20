@@ -1,0 +1,62 @@
+---
+title: Introduction
+description: Stratosphere is a Minecraft-focused game server panel built on Pterodactyl.
+---
+
+Stratosphere is a fork of the [Pterodactyl Panel](https://pterodactyl.io) focused on **Minecraft**. It keeps
+everything that makes Pterodactyl good — isolated Docker containers, Wings, the permission system, the API — and
+adds a modern interface plus the Minecraft tools you would otherwise need plugins and scripts for.
+
+<Callout type="info">
+  Stratosphere is not affiliated with or endorsed by the Pterodactyl project. Pterodactyl® is a trademark of its
+  owners. Like the original, this project is MIT licensed.
+</Callout>
+
+## What is different
+
+**A redesigned interface.** The whole panel, the admin area included, was rebuilt: a light and a dark theme,
+rounded cards, top tab navigation, new dialogs, dropdowns and toasts. The file editor is Monaco, the editor from
+VS Code.
+
+**Minecraft tools built in.** Instead of installing a stack of plugins, the panel itself does it:
+
+| Tool | What it does |
+| --- | --- |
+| [Versions tab](/docs/stratosphere/features/software) | Install Paper, Purpur, Spigot, Fabric, Quilt, Forge, NeoForge or Velocity in one click |
+| [Server properties](/docs/stratosphere/features/server-properties) | A typed editor for `server.properties`, a MOTD builder, and a Velocity proxy configurator |
+| [Mods & plugins](/docs/stratosphere/features/mods-and-plugins) | Browse and install content from Modrinth and CurseForge straight onto a server |
+| [Players](/docs/stratosphere/features/players) | Operators and whitelist management, plus inventory, ender chest and shulker box editing in the player window |
+| [Console](/docs/stratosphere/features/console) | Color-coded output, search, a copy button per block, full-screen mode and tab completion |
+| [Background jobs](/docs/stratosphere/features/jobs) | Archives, extractions, imports and downloads run on the node instead of freezing the file manager |
+| [Custom domains](/docs/stratosphere/features/domains) | Point a domain at a server and let players join through it |
+| [Auto sleep](/docs/stratosphere/features/auto-sleep) | Let idle servers sleep and wake up when a player joins |
+
+**Users can create their own servers** with a guided wizard, and **CPU burst** lets a server spend saved CPU on a
+short spike without raising its limit for good ([details](/docs/stratosphere/features/cpu-burst)).
+
+## Where to start
+
+<Cards>
+  <Card title="Getting started" href="/docs/stratosphere/getting-started">
+    Requirements, installation and updating
+  </Card>
+  <Card title="Features" href="/docs/stratosphere/features">
+    Everything the panel can do for server owners
+  </Card>
+  <Card title="Comparison" href="/docs/stratosphere/comparison">
+    Every feature next to Pterodactyl, Pelican and Hydrodactyl
+  </Card>
+  <Card title="Administration" href="/docs/stratosphere/admin">
+    Roles, settings, certificates, extensions and updates
+  </Card>
+  <Card title="Developing" href="/docs/stratosphere/developing">
+    Work on the panel, extensions, the router and the console protocol
+  </Card>
+</Cards>
+
+## Installing Stratosphere
+
+Stratosphere installs on top of a normal Pterodactyl setup. Get a base panel and Wings running with any
+Pterodactyl guide or community installer first, then switch to Stratosphere by extracting the release archive
+over it. The [installation guide](/docs/stratosphere/getting-started/installation) walks through the whole
+process, and the [updating guide](/docs/stratosphere/getting-started/updating) covers later updates.

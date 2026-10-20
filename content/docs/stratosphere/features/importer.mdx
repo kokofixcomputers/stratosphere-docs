@@ -1,0 +1,46 @@
+---
+title: Server Importer
+description: Copy an existing server from another host using SFTP, FTP or FTPS.
+---
+
+**Importer** in a server's menu copies everything from another server (SFTP, FTP or FTPS) into this one. It is for moving a server from another host: type the login, press **Connect**, check the fingerprint and press **Import**.
+
+## How the transfer works
+
+The **node** connects to the other server and downloads the files itself. Nothing goes through the panel or the browser. This needs the Wings of Stratosphere (see [Updates](/docs/stratosphere/admin/updates)); a node without it says so.
+
+**Connect** only looks: it logs in, shows the first entries of the folder, and shows the SSH fingerprint of the other server (SFTP). The import is then pinned to that fingerprint, so a different server on the same address is refused.
+
+The import is a [job](/docs/stratosphere/features/jobs) on the node. After you press **Import**, the box in the bottom right corner shows progress such as `37 of 100 files`, the bytes, the file it is on, and every file that failed with the reason. You can close or reload the page; the import goes on. **Cancel** there stops it, and files that were done stay.
+
+## Replace files
+
+*Replace files that are already here* is on by default. Turn it off to keep the files that exist and skip the ones from the other server.
+
+Replacing needs the permission `file.update`; importing needs `file.create`.
+
+## Credentials
+
+The login (password or private key) is used for the one request. It is not saved, not logged, and not written to the activity log. The activity log has the host, protocol and folders instead.
+
+## Safety rules
+
+- Links on the other server are not followed.
+- Names that could leave the folder (`..`, or with a `/`) are skipped.
+- Files count against the disk limit of the server, and its file denylist applies. A full disk stops the import.
+- The node refuses addresses on its own networks (10.x, 192.168.x, 127.x, and so on).
+
+An operator can allow some of those addresses in the Wings configuration with `api.remote_download_allowlist`. Setting `api.disable_remote_download: true` turns the importer off.
+
+## Before you start
+
+**Stop the server first.** Files that are in use, such as a running world, can be damaged when they are replaced. The page warns about it.
+
+One import runs per server at a time.
+
+## API
+
+Client routes:
+
+- `POST /api/client/servers/{uuid}/files/import/test` is the Connect step.
+- `POST /api/client/servers/{uuid}/jobs/import` starts the job.

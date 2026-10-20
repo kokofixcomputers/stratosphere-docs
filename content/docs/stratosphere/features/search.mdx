@@ -1,0 +1,49 @@
+---
+title: Search
+description: Find servers, actions and pages, and say what you want in plain words.
+---
+
+## Opening the search box
+
+The search box is in the top bar of every page except sign in and sign up. The same list is also in the admin pages.
+
+Open it by clicking, with `Ctrl`/`Cmd` + `K`, or with `/` when you are not already typing.
+
+## What it finds
+
+- **Servers** by name, description, address or node. Admins also find servers of other users and get the admin page of each one.
+- **Actions of the server that is open**: start, restart, stop, kill, "Back up now", and all its pages (Files, Players, Backups, and so on), as far as your permissions go.
+- **Power by name from anywhere**: `restart survival`, `stop lobby`, `start creative` offer the servers that match.
+- **Admin pages and actions** (Updates, Update the panel, Restore a panel backup, Create a server, Settings pages, and more), only the ones you may open.
+- **Account pages**, and switching the theme.
+
+## Saying what you want
+
+Besides searching, the box understands sentences. It shows what it understood at the top under **Suggested**, and `Enter` does it. Some examples:
+
+| You type | It offers |
+|---|---|
+| `start survival`, `boot up lobby please`, `turn on bedwars` | Start the server |
+| `stop creative`, `shut down the lobby`, `take lobby offline` | Stop |
+| `restart lobby`, `reboot survival`, `power cycle creative` | Restart |
+| `kill the frozen modded fun`, `force stop lobby`, `terminate bedwars` | Kill |
+| `create a backup for my minecraft server called Survival SMP`, `back up bedwars` | Back it up |
+| `create a backup called weekly for skyblock`, `make a backup called "Pre Update 1.21" of survival` | Back it up with that name |
+| `run say hello on lobby`, `send command /time set day to creative plots` | Send a console command |
+| `open the files of survival`, `show me the console for lobby`, `go to skyblock players` | Open that page of that server |
+| `open survival`, `jump to the lobby server`, `take me to skyblock` | Open the server |
+| `go to account settings`, `change my password`, `open my api keys` | Open that page |
+| `dark mode`, `switch to light mode`, `it is too bright`, `toggle theme` | Change the theme |
+
+Typing mistakes are put right, so `restrat lobby`, `shut dwon skyblock` and `reboot survivel` still work.
+
+- With a server open, leaving its name out means that one (`create a backup`, `run list`, `open the files`). With only one server, it means that one.
+- When several servers fit equally well, each is offered.
+- Anything that is not a request (`lobby`, `how do i restart a server`, `hello`) is searched for as before.
+- What it offers is always visible before anything is done, and your permissions are respected: a server you may not stop is not offered a stop.
+
+## How it works
+
+A small trained text classifier (a logistic regression on words, word pairs and groups of letters, about 100 KB) says what is meant, and plain rules find what it is about: the names of your own servers (matched loosely, with numbers exact), `called ...` for the name of a backup, and `run ... on ...` for a command.
+
+It runs in the browser, offline, in a millisecond, and nothing is sent anywhere. There is no AI service involved. See [Natural language](/docs/stratosphere/developing/nlu) for how it is trained and extended.

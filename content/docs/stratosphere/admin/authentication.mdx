@@ -1,0 +1,52 @@
+---
+title: Authentication
+description: Captcha, OAuth providers, passkeys and self sign up for the panel.
+---
+
+## Captcha
+
+The captcha is checked on the **sign in, sign up and password reset** forms and is set under **Admin > Settings > Authentication**. Pick one of:
+
+- **None**
+- **Google reCAPTCHA** (invisible)
+- **Cloudflare Turnstile**
+
+Enter the keys for the service you choose. Secrets are stored encrypted. A captcha that cannot be checked (the service is down, or no answer comes back) counts as failed.
+
+A panel from before this setting keeps what its old reCAPTCHA switch said until you save the page.
+
+## OAuth providers
+
+Under **Admin > Settings > Providers** you can add a service people can sign in with: **GitHub**, **Google**, **Discord**, **Microsoft**, **GitLab**, or any other OAuth 2 service. For a custom service, enter the authorization, token and user info addresses and the names of the fields in its answer.
+
+For each provider:
+
+1. Make an application at the service and give it the **callback address** shown on the provider's page: `https://your-panel/auth/oauth/<key>/callback`. It has to match exactly.
+2. Enter the client ID and secret (stored encrypted, never shown again) and switch the provider on.
+
+On the sign in page every provider that is on gets a **Continue with ...** button. Signed in users link and unlink services under **Account > Providers**.
+
+An account is recognized by the **id the service gives, never by email address**. A service that appears to match an existing email does not get into that account; the owner has to link it on purpose. Somebody with two-factor enabled still gives the code after signing in with a service.
+
+## Passkeys
+
+Sign in with a fingerprint, face, PIN or security key. Passkeys are **on by default**; an admin can turn them off. Users add passkeys under **Account > Passkeys**.
+
+- A passkey is checked on the device, so it does not ask for the two-factor code on top.
+- Passkeys need an `https` address (or `localhost`) and belong to the domain of the panel. If the panel moves to another domain, the passkeys stop working and have to be added again.
+- Behind a reverse proxy the panel has to see the real host (`TRUSTED_PROXIES`).
+
+## Self sign up
+
+**Off by default.** When you turn it on, anybody who can reach the panel can make an account with a username, email address and password, and/or with a provider that has "can sign up" ticked.
+
+- These are normal accounts: no admin rights, and nothing is mailed to the address they typed.
+- Use a captcha with it.
+
+Somebody who signs up with a service has no password. They can choose one with the usual "forgot password" mail or under Account, and the panel will not let them unlink their last way of signing in before they have one.
+
+## Notes
+
+- Signing in with a service redirects the whole browser, so the session cookie must be sent when the service sends the person back. Keep `SESSION_SAME_SITE=lax` (the default), not `strict`.
+- Passkeys and providers are in the tables `user_passkeys`, `auth_providers` and `user_identities`; `users.password_set` says whether somebody ever chose a password.
+- Permissions: `settings.authentication.view` / `settings.authentication.update` for the captcha, passkey and sign up settings; `settings.providers.view` / `settings.providers.update` for the providers.

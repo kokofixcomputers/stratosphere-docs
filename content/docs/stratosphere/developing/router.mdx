@@ -1,0 +1,105 @@
+---
+title: Router and edge
+description: The mc-router and panel-edge Go tools that give servers domains and serve the panel over HTTPS.
+---
+
+`mc-router` gives Minecraft servers custom domains. A player types `play.example.com` (the default port), the router reads the address from the first packet of the connection and forwards the player to the matching server allocation. The domain owner only needs an **A record** pointing at the machine the router runs on.
+
+```text
+player ── play.example.com:25565 ──▶ mc-router ──▶ node-ip:allocation-port (the server)
+```
+
+The player-facing side is described under [Domains](/docs/stratosphere/features/domains).
+
+## Quick install
+
+On the machine that runs the panel (and that the A records will point to):
+
+```bash
+cd /var/www/pterodactyl
+sudo php artisan p:router:install
+```
+
+`sudo bash tools/mc-router/install.sh` does exactly the same thing. It installs the right binary for your CPU, creates the secret shared with the panel, runs the database migration, starts the service and opens the port in `ufw`. After that, users add an A record pointing at the machine and add the domain on a server's **Domains** tab.
+
+Make sure nothing else on that machine uses port 25565. If one of your own servers uses it, give that server another port.
+
+## Manual install
+
+Use this if you prefer to do it yourself, or if the router runs on another machine.
+
+1. In the panel's `.env`, set a secret and clear the cache:
+
+   ```bash
+   PTERODACTYL_DOMAINS_ROUTER_TOKEN=some-long-random-string
+   # PTERODACTYL_DOMAINS_TARGET_IP=203.0.113.10   # only if the panel's host name does not resolve to the router
+   ```
+
+   ```bash
+   sudo php artisan migrate --force
+   sudo php artisan config:clear
+   ```
+
+2. Install the binary (use `mc-router-linux-arm64` on ARM machines), the config and the service:
+
+   ```bash
+   sudo install -m 755 dist/mc-router-linux-amd64 /usr/local/bin/mc-router
+   sudo cp mc-router.env.example /etc/mc-router.env && sudo nano /etc/mc-router.env
+   sudo cp mc-router.service /etc/systemd/system/mc-router.service
+   sudo systemctl daemon-reload && sudo systemctl enable --now mc-router
+   sudo journalctl -u mc-router -f
+   ```
+
+3. Open port 25565 in the firewall.
+
+`PTERODACTYL_DOMAINS_TARGET_IP` is the address users point their A records at; when it is empty, the panel's own address is used. In `/etc/mc-router.env`, `PANEL_URL` is where the panel is, `ROUTER_TOKEN` must match `PTERODACTYL_DOMAINS_ROUTER_TOKEN`, and `LISTEN=:25565` and `REFRESH=15s` are the defaults.
+
+## Player IPs and PROXY protocol
+
+Players see the router's address on the backend. Set `PROXY_PROTOCOL=1` in `/etc/mc-router.env` **only** for backends that understand it — for example Velocity with `haproxy-protocol = true`. Otherwise IP bans and IP logging see the router instead of the player.
+
+## Messages while a server cannot be reached
+
+The router asks the panel why, so the message a player sees is specific: the server is off, starting up, shutting down, suspended or still being installed. Suspended and installing servers are never connected to, and if the panel cannot be reached the player is simply told the server is off. Change the wording with `OFFLINE_MOTD`, `STARTING_MOTD`, `STOPPING_MOTD`, `SUSPENDED_MOTD` and `INSTALLING_MOTD` (see `mc-router.env.example`).
+
+An extension can replace the wording per server: it adds a `notice` with a label and a message to the answer of `/api/router/state`, through the `router.state` hook, and the router shows that instead of its own wording. The sample Offline MOTD extension does this. Suspended and installing servers always keep the router's wording.
+
+## Auto sleep
+
+A server whose owner turned on [auto sleep](/docs/stratosphere/features/auto-sleep) is stopped by the panel when nobody has been on for a while. The router then shows "asleep, join to wake it up" in the server list, and when a player tries to **join** it asks the panel to start the server and tells the player to come back in a minute. Only joining wakes it (looking at the server list does not), and a server its owner stopped by hand is never started. Waking needs the server to have a domain on the router, because a stopped server has nothing else that could notice the player. Change the wording with `SLEEPING_MOTD` and `WAKING_MOTD`.
+
+Java Edition only: Bedrock uses UDP and is not routed.
+
+## Building and testing
+
+Both tools are small Go programs and need Go 1.21 or newer.
+
+```bash
+go build
+go test ./...
+```
+
+Run the commands in `tools/mc-router` or `tools/panel-edge`. Building and packaging is also wired into the panel release, and an admin can update the installed binaries from **Admin > Updates**.
+
+## panel-edge
+
+`panel-edge` serves the panel over HTTPS with the certificates that were added in the panel under **Admin > Settings > Certificates**. PHP cannot do TLS by itself — the web server does — so `panel-edge` sits in front of the panel's web server:
+
+```text
+browser --https--> panel-edge :443 --http--> nginx / Apache :80 --> panel
+```
+
+- It picks the certificate by the name the browser asks for (SNI): an exact name, a wildcard (`*.example.com` covers one label), or the **default** certificate (also for someone who used the IP address). A name that nothing covers, with no default, is refused.
+- Install it once with:
+
+  ```bash
+  sudo bash tools/panel-edge/install.sh
+  ```
+
+  It installs the program and a systemd service, creates the secret (`PTERODACTYL_CERTIFICATES_TOKEN` in the panel's `.env`, `EDGE_TOKEN` in `/etc/panel-edge.env`), sets `TRUSTED_PROXIES` so the panel knows requests came over HTTPS, runs the migration and starts it. Then add a certificate in the panel.
+
+- Port 443 has to be free; a web server that already does HTTPS there must stop listening on it, or set `LISTEN=:8443` and send port 443 to it some other way. The panel's web server keeps serving HTTP on port 80 (`BACKEND`).
+- Settings live in `/etc/panel-edge.env`: `PANEL_URL`, `EDGE_TOKEN`, `LISTEN` (`:443`), `BACKEND` (`http://127.0.0.1:80`), `REFRESH` (`60s`) and `HSTS_SECONDS` (`0`).
+- With `HTTP_LISTEN=:80` it also answers on port 80: a name that has a certificate is sent to HTTPS (`301`, or `308` for requests that send something), anything else is passed on as before.
+
+See [Certificates](/docs/stratosphere/admin/certificates) for the panel side of HTTPS.

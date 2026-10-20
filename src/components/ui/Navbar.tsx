@@ -5,11 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, BookOpenIcon } from '@heroicons/react/24/solid';
 import { useSearchContext } from 'fumadocs-ui/provider';
-
-const Logo = () => (
-  <svg className="flex h-6 w-6 shrink-0" width="100" height="92" viewBox="0 0 100 92" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_136_35)"><path d="M35.1293 92L39.2242 59.3897L44.8276 60.4695L14.2241 81.2019L0 57.0141L32.7586 45.3521V47.7277L0 33.4742L14.2241 8.85446L45.6896 33.2582L39.2242 34.1221L34.4828 0H65.5172L61.4225 33.9061L56.681 32.8263L85.7759 8.85446L100 33.4742L66.1638 47.7277V45.5681L99.569 57.0141L85.3448 81.2019L57.5431 59.3897H61.638L66.1638 92H35.1293Z" fill="#52A9FF"></path></g><defs><clipPath id="clip0_136_35"><rect width="100" height="92" fill="white"></rect></clipPath></defs></svg>
-
-);
+import StratosphereLogo from '@/components/ui/StratosphereLogo';
+import { githubUrl, site } from '@/lib/site';
 
 const GitHubIcon = () => (
   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -29,53 +26,60 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
-      <div className={`container mx-auto px-4 transition-all duration-200 ease-out ${scrolled ? 'py-2' : 'py-2'}`}>
-        <nav className={`flex items-center justify-between gap-4 rounded-xl transition-all duration-200 ease-out ${scrolled
-          ? 'px-4 py-2.5 bg-[#18181b]/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-xl shadow-black/40'
-          : 'px-3 py-1.5 bg-transparent border border-transparent'
-          }`}>
-          <Link href="/" className="flex items-center gap-2.5 text-white hover:text-brand transition-colors">
-            <Logo />
-            <span className="font-semibold text-sm hidden sm:block">Hydrodactyl</span>
+    <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-3">
+      <nav
+        className={`mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border transition-all duration-300 ease-out ${
+          scrolled
+            ? 'border-white/10 bg-[#18181b]/70 px-4 py-2.5 shadow-xl shadow-black/40 backdrop-blur-2xl backdrop-saturate-150'
+            : 'border-transparent bg-transparent px-2 py-2'
+        }`}
+      >
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-white transition-colors hover:text-brand"
+        >
+          <StratosphereLogo className="h-6 w-6 shrink-0 text-brand" />
+          <span className="font-display text-[15px] font-semibold tracking-tight">
+            {site.name}
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-1">
+          <Link
+            href={site.docsPath}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
+              pathname?.startsWith('/docs')
+                ? 'bg-brand/10 text-brand'
+                : 'text-white/60 hover:bg-white/5 hover:text-white'
+            }`}
+          >
+            <BookOpenIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Docs</span>
           </Link>
 
-          <div className="flex items-center gap-1">
-            <Link
-              href="/docs/hydrodactyl"
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${pathname?.startsWith('/docs')
-                ? 'text-brand bg-brand/10'
-                : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-            >
-              <BookOpenIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Docs</span>
-            </Link>
-
-            <Link
-              href="https://github.com/blueprintframework/hydrodactyl"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
-            >
-              <GitHubIcon />
-              <span className="hidden sm:inline">GitHub</span>
-            </Link>
-          </div>
-
-          <button
-            onClick={() => setOpenSearch(true)}
-            className="flex items-center gap-2 pl-3 pr-2 py-1.5 text-white/40 hover:text-white/60 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/10 rounded-lg transition-all text-sm"
-            aria-label="Search"
+          <Link
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white/60 transition-all hover:bg-white/5 hover:text-white"
           >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-            <span className="hidden md:inline text-white/40">Search...</span>
-            <kbd className="hidden md:inline px-1.5 py-0.5 text-[10px] font-mono text-white/30 bg-white/[0.06] rounded border border-white/[0.06]">
-              Ctrl K
-            </kbd>
-          </button>
-        </nav>
-      </div>
+            <GitHubIcon />
+            <span className="hidden sm:inline">GitHub</span>
+          </Link>
+        </div>
+
+        <button
+          onClick={() => setOpenSearch(true)}
+          className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] py-1.5 pl-3 pr-2 text-sm text-white/40 transition-all hover:border-white/10 hover:bg-white/[0.06] hover:text-white/60"
+          aria-label="Search"
+        >
+          <MagnifyingGlassIcon className="w-4 h-4" />
+          <span className="hidden text-white/40 md:inline">Search...</span>
+          <kbd className="hidden rounded border border-white/[0.06] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/30 md:inline">
+            Ctrl K
+          </kbd>
+        </button>
+      </nav>
     </header>
   );
 }

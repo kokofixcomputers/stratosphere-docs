@@ -1,0 +1,39 @@
+---
+title: Software
+description: Install and switch the server software (Paper, Purpur, Fabric, Forge, Velocity and more) from the Versions tab.
+---
+
+The **Versions** tab installs the server software for you. Pick the program, the Minecraft version and a build, and the panel does the rest.
+
+## Choosing software
+
+Supported software:
+
+- **Plugins:** Paper, Purpur, Spigot, Velocity
+- **Mods:** Fabric, Quilt, Forge, NeoForge
+
+For each one you choose the Minecraft version and then a build. The newest build is preselected, so the common case is a single click. Server software metadata comes from [MCJars](https://mcjars.app).
+
+## Installing
+
+When you press install, the panel:
+
+1. Stops the server.
+2. Replaces the server jar with the build you chose.
+3. Updates the egg variables and the Java image to match the software and Minecraft version.
+
+The tab also shows what is currently running. That record is backed by a `stratosphere.json` file in the server folder, so the panel knows which software and version are in place even while the server is stopped.
+
+<Callout type="warn" title="Server is stopped to install">
+The server software only changes while the server is stopped. Make sure nothing in game still needs to finish before you switch.
+</Callout>
+
+## The Java Server egg
+
+The Minecraft nest ships with a single **Java Server** egg: a plain Java container that runs any Java server software, including Vanilla, Paper, Purpur, Fabric, Forge, NeoForge and Velocity. Its install script only creates the folder. The software itself is put in place by the Versions tab and by the create wizard, which automatically uses an egg whose name starts with `Java`.
+
+A server created from the wizard starts with **two allocations**: the one it is played on, plus one more for things such as Simple Voice Chat or BlueMap.
+
+## Next steps
+
+Need tab completion, player tools or TPS and weather on the console? Install the [Stratosphere helper](/docs/stratosphere/features/helper).

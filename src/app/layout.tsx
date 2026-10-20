@@ -2,22 +2,33 @@ import './global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
 import SearchDialog from '@/components/search';
 import Plausible from '@/components/Plausible';
-import { IBM_Plex_Mono, Inter } from 'next/font/google';
+import { JetBrains_Mono, Manrope, Space_Grotesk } from 'next/font/google';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
+import { site } from '@/lib/site';
 
-const ibmPlexMono = IBM_Plex_Mono({
+const display = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-mono',
+  variable: '--font-space-grotesk',
 });
 
-const inter = Inter({
+const sans = Manrope({
   subsets: ['latin'],
-  variable: '--font-display',
+  variable: '--font-manrope',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
+  title: {
+    default: site.name,
+    template: `%s · ${site.name}`,
+  },
+  description: site.shortDescription,
   icons: {
     icon: '/favicon.svg',
   },
@@ -25,8 +36,12 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`dark ${ibmPlexMono.variable} ${inter.variable} ${ibmPlexMono.className}`} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen bg-[#09090b]">
+    <html
+      lang="en"
+      className={`dark ${display.variable} ${sans.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="font-sans flex flex-col min-h-screen bg-[#09090b]">
         <Plausible />
         <RootProvider
           search={{

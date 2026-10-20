@@ -1,0 +1,176 @@
+---
+title: Comparison
+description: Every Stratosphere feature next to Pterodactyl, Pelican and Hydrodactyl.
+---
+
+Stratosphere is a fork of Pterodactyl, and so are Pelican and Hydrodactyl (formerly Pyrodactyl). All four run every
+game server in its own Docker container through a daemon called Wings, and all of them speak the same client and
+application APIs, so the base feature set is nearly identical. What separates them is what was built on top of it.
+
+<Callout type="info" title="How to read this page">
+  This page is written by the Stratosphere project, so expect it to be kind to Stratosphere. It was checked on
+  2026-10-19 against each project's own documentation:
+
+  - **Pterodactyl** — [pterodactyl.io](https://pterodactyl.io), 1.x (stable). Pterodactyl 2.0 is in open beta and
+    brings an extension SDK and a marketplace; it is noted separately below.
+  - **Pelican** — [pelican.dev/docs](https://pelican.dev/docs) and the project's own comparison page.
+  - **Hydrodactyl** — [github.com/blueprintframework/hydrodactyl](https://github.com/blueprintframework/hydrodactyl).
+    The project was called Pyrodactyl before; the Pyrodactyl repositories now point at it.
+
+  Symbols: **✅** documented in that project's own docs, **◐** partly or by other means (a proxy, a plugin, a
+  different workflow), **❌** not included, **—** not documented for that project, so treat it as unknown rather
+  than absent. Corrections are welcome as issues on
+  [kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel/issues).
+</Callout>
+
+## The four panels
+
+| | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| **Fork of** | Pterodactyl 1.x | — (the original, since 2015) | Pterodactyl | Pterodactyl (via Pyrodactyl) |
+| **Focus** | Minecraft servers | Any game, hosting companies | Any game, hosting companies | Performance and build speed |
+| **License** | MIT | MIT | AGPLv3 (panel), MIT (Wings) | Apache 2.0 |
+| **Source** | [StratPanel](https://github.com/kokofixcomputers/StratPanel) | [pterodactyl/panel](https://github.com/pterodactyl/panel) | [pelican/panel](https://github.com/pelican/panel) | [hydrodactyl](https://github.com/blueprintframework/hydrodactyl) |
+| **Install shape** | Extract an archive over a working Pterodactyl | Installer, manual, Docker image | Docker or web installer | Docker image, quick start |
+
+## What every fork inherits
+
+Everything below is part of the base and works the same way in all four: Docker-isolated servers with CPU, memory,
+disk and IO limits, Wings on every node, eggs and nests, allocations and ports, startup variables, subusers with
+granular permissions, backups, databases, schedules, the file manager and console, SFTP, the activity log, and the
+client, application and admin APIs. If a row below is about Minecraft, assume it is *not* in the base.
+
+## Minecraft tools
+
+This is the part Stratosphere is built around. Everything here is a panel feature — no plugin, script or third-party
+service to install.
+
+| Feature | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| Install Paper, Purpur, Spigot, Fabric, Quilt, Forge, NeoForge or Velocity in one click | ✅ | ❌ | — | — |
+| Pick a Minecraft version and a build (metadata from [MCJars](https://mcjars.app)) | ✅ | ❌ | — | — |
+| The running software is recorded per server (`stratosphere.json`) | ✅ | ❌ | — | — |
+| Typed editor for `server.properties` instead of egg variables | ✅ | ❌ | — | — |
+| MOTD builder with colors and formatting | ✅ | ❌ | — | — |
+| Velocity proxy configurator (servers, forced hosts, forwarding secret) | ✅ | ❌ | — | — |
+| Mods and plugins from Modrinth, with dependencies | ✅ | ❌ | — | ✅ (Modrinth, Hangar, Spiget) |
+| CurseForge installs with fingerprint-based "detect existing" | ✅ | ❌ | — | — |
+| Install data packs, resource packs, worlds and modpacks | ✅ | ❌ | — | — |
+| Operators and whitelist management with player heads | ✅ | ❌ | — | — |
+| Player window: inventory, ender chest and live edits | ✅ | ❌ | — | — |
+| Shulker box contents, opened in the panel | ✅ | ❌ | — | — |
+| Armor trims drawn on item icons | ✅ | ❌ | — | — |
+| Player list, vitals (hearts, hunger, level), whisper, kick and ban | ✅ | ❌ | — | — |
+| Console tab completion for every plugin and mod command | ✅ | ❌ | — | — |
+| TPS/MSPT clock and weather display on the console | ✅ | ❌ | — | — |
+| Companion plugin (Paper/Spigot) and mods (Fabric/NeoForge) shipped with the panel | ✅ | ❌ | — | — |
+
+## Interface and quality of life
+
+| Feature | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| Redesigned client area, admin area included | ✅ | ❌ | ✅ | ✅ |
+| Light, dark and device theme, remembered per browser | ✅ | ❌ | ✅ | — |
+| File editor with tabs, per-tab undo and per-server remembered state | ✅ | ✅ | — | — |
+| Search box for servers, pages and actions | ✅ | ❌ | — | — |
+| Natural-language commands in the search box ("restart the lobby") | ✅ | ❌ | — | — |
+| Dashboard with folders, stars, filters and natural name sorting | ✅ | ❌ | — | — |
+| Background jobs with progress, cancel and a job history | ✅ | ◐ | — | — |
+| Trash bin for deleted files, with retention and restore | ✅ | ❌ | — | — |
+| Schedules explained field by field, with the next run times | ✅ | ◐ | — | — |
+| Multi-language interface | — | ✅ | ✅ (32 languages) | — |
+| Webhooks | — | ❌ | ✅ | — |
+| Health page (cache, database, queue, scheduler, disk) | — | ❌ | ✅ | — |
+
+## Running a network
+
+| Feature | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| Custom domains per server (players join with a name, not an IP) | ✅ | ❌ | — | — |
+| The bundled router, installed with one command | ✅ | ❌ | — | — |
+| DNS records managed for the user, from the panel | ✅ | ❌ | — | — |
+| Free HTTPS certificates for server domains (HTTP and DNS challenge) | ✅ | ❌ | — | — |
+| Auto sleep, woken by a player joining | ✅ | ❌ | — | — |
+| CPU burst (a server can spend saved CPU on a spike) | ✅ | ❌ | — | — |
+| Users create their own servers through a guided wizard | ✅ | ❌ | — | — |
+| Per-user limits and defaults for self-service servers | ✅ | ❌ | — | — |
+| Server importer (SFTP, FTP or FTPS) run by the node | ✅ | ❌ | — | — |
+| Wings self-update from the panel | ✅ | ❌ | — | — |
+| S3-compatible backup storage | ❌ | ◐ | ✅ (per node) | ✅ |
+| Migration from another panel in place | — | ❌ | ✅ | — |
+
+## Administration and security
+
+| Feature | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| Roles and permissions for administrators | ✅ | ❌ | ✅ | — |
+| Passkeys | ✅ | ❌ | ✅ | — |
+| Captcha on sign-in (reCAPTCHA or Turnstile) | ✅ | ❌ | ✅ | — |
+| Sign in with GitHub, Google, Discord, Microsoft, GitLab or any OAuth2 provider | ✅ | ❌ | ✅ | — |
+| Self sign-up with limits | ✅ | ❌ | — | — |
+| TOTP two-factor and recovery codes | ✅ | ✅ | ✅ | ✅ |
+| HTTPS for the panel itself, with the certificates managed inside it | ✅ | ◐ | ◐ | ◐ |
+| HTTPS certificates for Wings nodes, pushed to the node | ✅ | ◐ | — | — |
+| Port 80 redirect service | ✅ | ◐ | ◐ | ◐ |
+| Extension system with hooks, routes and a browser API | ✅ | ❌ (2.0 beta: ✅) | ✅ (Hub plugins) | ❌ |
+| In-panel updater with backups and rollback | ✅ | ❌ | — | — |
+| Nightly builds published as a release channel | ✅ | ◐ | ◐ | ◐ |
+| Database backend other than MySQL/MariaDB | ❌ | ❌ | ❌ | ✅ (PostgreSQL) |
+| Admin area with a modern design | ✅ | ❌ | ✅ | ✅ |
+
+## Development
+
+| Feature | Stratosphere | Pterodactyl | Pelican | Hydrodactyl |
+| --- | --- | --- | --- | --- |
+| Run the whole frontend against a mocked API, no PHP or database needed | ✅ | — | — | — |
+| A written protocol so plugins can talk to the panel over the console | ✅ | ❌ | ❌ | ❌ |
+| Machine-readable schema and an example for that protocol | ✅ | ❌ | ❌ | ❌ |
+| Documented file formats the panel reads (`stratosphere.json`, commands file) | ✅ | ❌ | — | — |
+| On-device natural-language search model you can retrain yourself | ✅ | ❌ | — | — |
+| Router and TLS terminator as small Go programs in the same repository | ✅ | ❌ | — | — |
+| Fast frontend build (Vite-style, no webpack) | — | ❌ | — | ✅ (Vite and Turbo) |
+| Keyboard-navigable, screen-reader friendly interface | — | — | — | ✅ |
+| OpenAPI reference for the API | — | ◐ | — | ✅ (Scalar) |
+
+## What each one is for
+
+**Pterodactyl** is the right answer if you want the upstream project, the biggest ecosystem of eggs, and support from
+the largest community. It is general purpose: nothing about it is Minecraft specific, so every feature in the first
+table is something you would add with an egg, a plugin or a script.
+
+**Pelican** is the right answer if your servers are not all Minecraft. It modernizes the panel — plugins and themes
+from a hub, admin roles, passkeys, webhooks, 32 languages, a health page — and it runs the same eggs and Wings
+daemons in the same Docker containers.
+
+**Hydrodactyl** is the right answer if what you care about is a small, fast frontend and a quick start: Vite and
+Turbo builds, an installer for Minecraft content backed by Modrinth, Hangar and Spiget, S3 backups and PostgreSQL
+support. It is the project this documentation site used to document.
+
+**Stratosphere** is the answer if what you run is Minecraft, and you want the panel itself to do the work a
+Minecraft host normally charges plugins for: installing software and mods, editing properties and inventories,
+letting players join through a domain, sleeping idle servers, bursting past CPU limits and letting users create
+their own servers. It stays a Pterodactyl underneath, so eggs, backups, databases, schedules, subusers and the API
+behave exactly the way your team already knows.
+
+## Also worth knowing
+
+- **Closed-source panels** built on the same base exist (for example WISP). They are not free software, so they are
+  not covered here.
+- **Paid Pterodactyl plugins** cover a lot of the same ground as Stratosphere's built-in tools — a marketplace
+  installer, custom domains, sleep, server creation. Stratosphere ships that functionality instead of selling it.
+- **Pterodactyl 2.0** is in open beta and adds an extension SDK with a marketplace. Stratosphere is based on the
+  stable 1.x line, and its extension system follows the same idea as the older Blueprint extension format: add pages,
+  hooks and routes without touching the panel's own files.
+- **Blueprint framework extensions** are not supported on Hydrodactyl, per its README.
+
+<Cards>
+  <Card title="Installation" href="/docs/stratosphere/getting-started/installation">
+    Install Stratosphere over a working Pterodactyl setup
+  </Card>
+  <Card title="Features" href="/docs/stratosphere/features">
+    Every feature in detail
+  </Card>
+  <Card title="Troubleshooting" href="/docs/stratosphere/troubleshooting">
+    Coming from Pterodactyl and something does not work
+  </Card>
+</Cards>

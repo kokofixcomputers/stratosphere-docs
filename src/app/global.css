@@ -9,6 +9,29 @@
   --color-brand: #52a9ff;
   --color-brand-light: #7cc0ff;
   --color-brand-dark: #2d8fe0;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Sturdy, tighter headings with the display face */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Soft brand glow, used behind hero/section content */
+.brand-glow {
+  background-image:
+    radial-gradient(60% 60% at 50% 0%, rgba(82, 169, 255, 0.18) 0%, rgba(82, 169, 255, 0) 100%);
+}
+
+/* Subtle dotted grid backdrop */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(70% 60% at 50% 40%, black 20%, transparent 100%);
 }
 
 /* Force dark mode and override fumadocs theme */

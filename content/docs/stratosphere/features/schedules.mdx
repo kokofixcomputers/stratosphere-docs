@@ -1,0 +1,41 @@
+---
+title: Schedules
+description: Build cron schedules with live explanations, next run times, validation and presets in the schedule window.
+---
+
+The schedule window builds a cron schedule for a server without you having to remember what each field means. As you type, the panel explains what the schedule does.
+
+## Live explanations
+
+The five cron fields are explained as you fill them in, in plain sentences such as:
+
+- "Runs every 5 minutes."
+- "Runs at 04:00 on weekdays."
+
+Under that, the window shows the **next three times the schedule runs**, by the clock of the panel. The timezone is the panel's `APP_TIMEZONE` (handed to the page as `timezone`), so the times match how the panel counts.
+
+## Validation
+
+A wrong value is explained the same way, for example "Minute must be between 0 and 59." While a field is wrong, the **save button waits** until it is fixed.
+
+## Presets
+
+**Presets** fill the fields with a click, so common schedules (every few minutes, once a day, on weekdays, and so on) do not have to be typed from scratch.
+
+## Cron syntax
+
+Only plain cron is read:
+
+- numbers,
+- lists,
+- ranges,
+- steps,
+- `JAN`-`DEC` month names,
+- `SUN`-`SAT` day names,
+- `0` and `7` both mean Sunday.
+
+`L`, `W` and `#` are passed through to the panel's own check on save, but the window does not explain them. When **both** the day of the month and the day of the week are set, either one is enough, like cron does.
+
+## Windows that fit
+
+The windows and cards no longer run off the bottom of the screen. The space above a window is a share of the **height** (never the width), and a window that is taller than the screen **scrolls inside itself**.

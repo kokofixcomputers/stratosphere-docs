@@ -1,5 +1,7 @@
-const OWNER = 'blueprintframework';
-const REPO = 'hydrodactyl';
+import { site } from '@/lib/site';
+
+const OWNER = site.github.owner;
+const REPO = site.github.repo;
 
 const BUILD_TOKEN = `${Date.now()}-${process.pid}`;
 
@@ -17,15 +19,17 @@ function parseVersion(tagName: string) {
     .map((p) => parseInt(p, 10) || 0);
 }
 
-function isV6AndLater(tagName: string) {
+// The `nightly` tag (and anything else that does not start with a version)
+// is a rolling build, not a release, so it is left out here.
+function isVersionedRelease(tagName: string) {
   const [major = 0] = parseVersion(tagName);
-  return major >= 6;
+  return major >= 1;
 }
 
 function mapReleases(data: Array<Record<string, any>>): ReleaseSummary[] {
   return data
     .filter((release) => typeof release.tag_name === 'string')
-    .filter((release) => isV6AndLater(release.tag_name))
+    .filter((release) => isVersionedRelease(release.tag_name))
     .map((release) => ({
       tagName: release.tag_name,
       publishedAt: release.published_at ?? null,
@@ -86,8 +90,8 @@ export async function fetchAllReleases(): Promise<ReleaseSummary[]> {
 }
 
 export async function fetchLatestVersion(
-  owner = OWNER,
-  repo = REPO
+  owner: string = OWNER,
+  repo: string = REPO
 ): Promise<string | null> {
   try {
     const data = await githubApi<Record<string, any>>(

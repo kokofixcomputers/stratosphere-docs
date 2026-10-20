@@ -1,0 +1,89 @@
+---
+title: Console protocol
+description: The live console protocol between the panel and the Stratosphere helper plugin and mod.
+---
+
+The Stratosphere helper — the plugin for Paper and Spigot, and the mod for Fabric and NeoForge — talks to the panel over the server console. The panel sends one console command and the helper answers with one JSON line per event. This is how the panel gets live TPS and MSPT, the online players and their vitals, inventories, ender chests and shulker boxes, and how it keeps the command tree fresh.
+
+See the [Helper](/docs/stratosphere/features/helper) feature for what players and admins see, and [Commands JSON](/docs/stratosphere/developing/commands-json) for the file the helper writes.
+
+## The console command
+
+The panel talks to the helper with the console command `stratpanelhidepanellogs <subcommand>` (console only; ignore any other sender). Register it in `plugin.yml`. **Every console line that mentions `stratpanelhidepanellogs` or the `::stratpanel::` tag is hidden by the panel** — that is why the name is so long.
+
+## Subcommands
+
+| Subcommand | The helper answers with |
+|---|---|
+| `handshake` | A `handshake` event (the helper's version, platform, Minecraft version and protocol level), then a `players` event. The panel sends it when it connects to a running server that has `stratosphere.commands.json` in its root, and shows a green check when the answer arrives (a red cross when it does not within 5 seconds). |
+| `refresh` | A `players` event, then it writes `stratosphere.commands.json` again **even when nothing changed** (a new `generatedAt`), announces `commands-updated`, and finally sends `{"event":"refreshed","generatedAt":"…"}` as the done message. The panel's status button sends it and reloads the command list on `refreshed`. |
+| `sync` | A `players` event only. |
+| `scan` | Rescans the commands (debounced) and announces `commands-updated` when the content changed. |
+| `perf` | A `performance` event with TPS and MSPT, and with protocol 8 the world time and weather. The panel asks every 5 seconds while the console page is open and the server is running. |
+| `vitals` | A `vitals` event with health, food, level and experience for everyone online. The panel asks every 3 seconds while the Players tab is open and the server is running. |
+| `inventory <player>` | An `inventory` event with the slots that hold something. The panel asks when the player window opens, every 10 seconds while it is open, and when someone presses Refresh. |
+| `heal <player>` | Sets the health to the maximum, then a `vitals` event. |
+| `feed <player>` | Sets hunger to 20 and saturation to 20, then a `vitals` event. |
+| `swap <player> <from> <to>` | Exchanges two slots (or adds to the stack of the same item), then the new `inventory` event. An item the game would not let a player put in an armor slot is refused with a `player-error`, and the inventory is sent either way. |
+| `delete <player> <slot>` | Empties a slot, then the new `inventory` event. |
+| `ender <player>` | An `enderchest` event with the same kind of items for the 27 slots of the ender chest (0 to 26, row by row). |
+| `enderswap <player> <from> <to>` / `enderdelete <player> <slot>` | The same as `swap` and `delete` for the ender chest, where any item fits any slot. Answered with the new `enderchest` event. |
+| `shulker <player> <inv\|ender> <slot>` | A `shulkerbox` event for the shulker box in that slot of the inventory (`inv`) or of the ender chest (`ender`). A slot without a shulker box is answered with a `player-error`. Protocol 9. |
+| `shulkerswap <player> <inv\|ender> <slot> <from> <to>` / `shulkerdelete <player> <inv\|ender> <slot> <inner>` | The same as `enderswap` and `enderdelete` for the items inside the box. The change is written back to the box item. Answered with the new `shulkerbox` event. |
+| `health <player> <delta>` / `hunger <player> <delta>` / `levels <player> <delta>` | Adds the number (negative to take away) to the health in hit points (2 is a heart), the hunger bar, or the experience level, then a `vitals` event. |
+| `gamemode <player> <mode>` | Puts the player in `survival`, `creative`, `adventure` or `spectator`, then a `vitals` event. |
+
+## Event shapes
+
+```json
+{"event":"handshake","version":"1.0.0","platform":"paper","minecraft":"1.21.4","protocol":4}
+{"event":"performance","tps":[19.98,20.0,20.0],"mspt":{"avg":12.4,"min":3.1,"max":41.0},"supported":true}
+{"event":"vitals","players":[{"name":"Steve","uuid":"…","health":18.5,"maxHealth":20,"absorption":0,"food":17,"saturation":5.2,"level":12,"exp":0.33}]}
+{"event":"inventory","name":"Steve","uuid":"…","items":[{"slot":0,"id":"minecraft:diamond_sword","count":1,"damage":12,"maxDamage":1561,"name":"Excalibur","enchants":{"sharpness":5}}]}
+{"event":"enderchest","name":"Steve","uuid":"…","items":[]}
+{"event":"shulkerbox","name":"Steve","uuid":"…","where":"inv","box":4,"boxId":"minecraft:red_shulker_box","items":[]}
+```
+
+- `performance` carries the average TPS of the last 1, 5 and 15 minutes (never above 20) and the MSPT over the last 100 ticks (`avg` only when the software cannot give more). A server that can report neither answers `{"event":"performance","supported":false}` (Folia). With protocol 8 it also has `"world":{"time":13000,"day":12,"raining":true,"thundering":false}` for the main world; `time` is the tick of the day (0 is sunrise at 6:00), `day` counts from 1, and the weather is what the world is **set** to.
+- An armor piece with a trim has `"trim":{"material":"gold","pattern":"coast"}` (ids without `minecraft:`; a modded one keeps its namespace). The same field is on the items of `enderchest` and `shulkerbox`. Slots are numbered like the Bukkit API: 0 to 8 the hotbar, 9 to 35 the rest, 36 boots, 37 leggings, 38 chestplate, 39 helmet, 40 off hand.
+
+## Protocol levels
+
+`handshake` reports a `protocol` level. The panel only asks what the helper says it can answer.
+
+| Level | The helper also knows |
+|---|---|
+| 2 | `perf` |
+| 3 | `vitals` |
+| 4 | the player commands |
+| 5 | the ender chest |
+| 6 | changing health, hunger and levels |
+| 7 | sending and changing the game mode (every `vitals` entry then has a `gameMode`) |
+| 8 | the time and the weather in `perf` |
+| 9 | opening shulker boxes |
+
+## Player events
+
+Besides the answers above, the helper tells the panel who is online, on the same channel:
+
+```text
+::stratpanel:: {"event":"player-join","name":"Steve","uuid":"13bc7d5e-f906-41ff-a949-6c1eb677fe03"}
+::stratpanel:: {"event":"player-leave","name":"Steve","uuid":"13bc7d5e-f906-41ff-a949-6c1eb677fe03"}
+::stratpanel:: {"event":"players","players":[{"name":"Steve","uuid":"…"},{"name":"Alex","uuid":"…"}]}
+```
+
+- Send `player-join` and `player-leave` from the join and quit events at **MONITOR** priority, so the result is final.
+- `players` is the complete list and **replaces** what the panel has. Send it when the helper enables (players may already be online) and whenever the panel asks.
+- `uuid` is optional; `name` is required (letters, digits, `_ . - space`, at most 32 characters).
+- **These events are trusted only when the line starts with the log header followed by the name of the helper in brackets, `[Stratosphere]`** — for example `[17:23:31 INFO]: [Stratosphere] ::stratpanel:: {...}`. `[StratPanel]`, what the helper was called before, is accepted too. Chat cannot begin a new line, so a player cannot forge one. Always use the helper logger, and on platforms whose log lines look different keep the `[Stratosphere]` prefix directly after the header. A tagged line that does not start like that is hidden but ignored.
+- When the helper is not installed, the panel still understands the server's own log lines (`logged in with entity id`, `lost connection`).
+
+## Errors
+
+A command about a player who is not online, or with a name or slot that is not valid, is answered with:
+
+```json
+{"event":"player-error","name":"Steve","action":"swap","error":"That player is not online."}
+```
+
+A `shulker` command for a slot that holds no shulker box is answered the same way, with the error `That is not a shulker box.`.

@@ -1,8 +1,9 @@
 import { fetchLatestVersion } from '@/lib/github-releases';
+import { site } from '@/lib/site';
 
 export default async function LatestVersion({
-  owner = 'blueprintframework',
-  repo = 'hydrodactyl',
+  owner = site.github.owner,
+  repo = site.github.repo,
   fallback = 'unknown',
 }: {
   owner?: string;

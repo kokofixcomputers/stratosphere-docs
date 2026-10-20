@@ -1,0 +1,67 @@
+---
+title: Files
+description: Browse and edit server files with the list and editor views.
+---
+
+## List and Editor views
+
+The file manager has two views, chosen with the **List | Editor** buttons at its top. Your choice is remembered in your browser.
+
+The **Editor** view looks like the explorer of a code editor: a tree of folders on the left, tabs above the editor, and Monaco in the middle.
+
+## Explorer
+
+The left side shows the folders of the server as a tree:
+
+- Click a folder to open or close it. What is inside is read when the folder is opened.
+- Click a file to open it.
+- Drag the edge between the tree and the editor to resize it. Double click the edge to reset the width.
+- Right click for **New file**, **New folder**, **Rename**, **Download**, **Copy path** and **Delete**. With the keyboard, `F2` renames and `Delete` deletes.
+
+Deletes go to the trash bin when an admin has turned it on, as described below.
+
+## Tabs
+
+Every file you open gets a tab above the editor.
+
+- Click a tab to switch to it, click its cross or middle click to close it.
+- Drag tabs to reorder them.
+- A dot on a tab means unsaved changes. Closing a tab with a dot asks first.
+- Each tab keeps its own undo history, cursor position and scroll position.
+
+## The editor
+
+The editor is **Monaco**, the editor of VS Code.
+
+- The language is set from the file and can be changed at the bottom right.
+- Press `Ctrl`/`Cmd` + `S` to save.
+- Use **Save & Restart** for config files.
+
+What was open (the tabs, open folders and width) is remembered per server in your browser. Closing the page with unsaved changes warns you first.
+
+## Limits and permissions
+
+Files over 4 MB and binary files are not opened; they offer a download instead. On a narrow screen, such as a phone, the list is shown whatever view was chosen.
+
+Permissions work as in the List view:
+
+| Permission | Allows |
+|---|---|
+| `file.read-content` | Open files |
+| `file.update` | Save files. Without it, files open read only. |
+| `file.create` | Create files and folders |
+| `file.delete` | Delete files and folders |
+
+## Trash bin
+
+An admin turns the trash bin on and chooses how many days it keeps things under [Admin settings](/docs/stratosphere/admin/trash). With it on, things you delete go to a hidden folder, `.stratosphere-trash`, in the root of the server on the node. Nothing is copied and nothing leaves the disk, and the file manager never shows or touches that folder.
+
+Per server, with subuser permissions:
+
+| Permission | Allows |
+|---|---|
+| `trash.read` | See the Trash page on the server's menu |
+| `trash.restore` | Recover things (also needs `file.create` for files) |
+| `trash.delete` | Delete things for good, empty the bin, and delete files without moving them to it |
+
+Files in the trash bin count toward the disk limit of the server until they are recovered, deleted or expire. Recovering puts a file back where it was; if something is there now it gets " (restored)" added to its name, nothing is overwritten, and a folder that is gone is made again.

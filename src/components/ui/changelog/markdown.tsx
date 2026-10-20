@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { site } from '@/lib/site';
 
 export type Block =
   | { type: 'heading'; level: number; text: string }
@@ -82,7 +83,10 @@ function linkProps(href: string) {
 
 function shortenRepoReference(url: string): string | null {
   const match = url.match(
-    /^https?:\/\/github\.com\/BlueprintFramework\/hydrodactyl\/(?:pull|issues)\/(\d+)(?:\/.*)?(?:[?#].*)?$/i
+    new RegExp(
+      `^https?://github\\.com/${site.github.owner}/${site.github.repo}/(?:pull|issues)/(\\d+)(?:/.*)?(?:[?#].*)?$`,
+      'i'
+    )
   );
   return match ? `#${match[1]}` : null;
 }

@@ -1,0 +1,70 @@
+---
+title: Installation
+description: Install Stratosphere by extracting the release archive over a working Pterodactyl panel and Wings install.
+---
+
+## Before you start
+
+Stratosphere installs on top of a normal Pterodactyl setup. There is no separate installer: you bring up a base panel and Wings first, then replace the panel files with the Stratosphere archive.
+
+1. Follow the official [Pterodactyl installation guide](https://pterodactyl.io/panel/1.0/getting_started.html), or a community installer or script, to get a working panel (PHP, MySQL/MariaDB, Redis and a web server) and Wings running on your node.
+2. Confirm the stock panel works and you can log in before you continue.
+
+The [requirements](/docs/stratosphere/getting-started) are the usual Pterodactyl ones, including PHP 8.2 or 8.3.
+
+## Get the archive
+
+Every push to `1.0-develop` builds a ready-to-use archive, and every `v*` tag creates a release. Both contain the built frontend, so there is nothing to compile on your server.
+
+- Nightly (latest push):
+  `https://github.com/kokofixcomputers/StratPanel/releases/download/nightly/panel.tar.gz`
+- Fixed release (replace the tag), for example:
+  `https://github.com/kokofixcomputers/StratPanel/releases/download/v1.0.0/panel.tar.gz`
+
+## Extract the archive over the panel
+
+Run these from your panel directory. The `nightly` URL is the default; swap in a release URL for a fixed version.
+
+```bash
+cd /var/www/pterodactyl
+sudo php artisan down
+
+# Back up first, this is not optional
+sudo tar -czf ~/panel-backup-$(date +%F).tar.gz --exclude=vendor --exclude=node_modules .
+sudo mysqldump panel > ~/panel-db-$(date +%F).sql   # use your database name
+
+curl -L https://github.com/kokofixcomputers/StratPanel/releases/download/nightly/panel.tar.gz | sudo tar -xzv
+sudo chmod -R 755 storage/* bootstrap/cache
+
+sudo composer install --no-dev --optimize-autoloader
+sudo php artisan view:clear
+sudo php artisan config:clear
+sudo php artisan route:clear
+sudo php artisan migrate --seed --force
+
+sudo chown -R www-data:www-data /var/www/pterodactyl/*   # nginx / apache user, use "nginx" on RHEL based systems
+sudo php artisan queue:restart
+sudo php artisan up
+```
+
+Hard refresh the browser afterwards (Ctrl+Shift+R).
+
+<Callout type="info" title="What the archive does not touch">
+  The archive never touches your `.env`, your database or your server files. It only replaces panel
+  files, so your configuration and the servers on your nodes stay as they are.
+</Callout>
+
+Notes:
+
+- The `php artisan migrate --seed --force` step applies migrations and the seeder. The seeder adds the shipped eggs, including the single **Java Server** egg in the Minecraft nest that plain Java server software runs from.
+- The `chown` user is whatever your web server runs as: `www-data` on Debian and Ubuntu, `nginx` on RHEL-based systems, `apache` in some setups.
+- If you get `composer` or PHP version errors, check that you are on PHP 8.2 or 8.3.
+
+## Optional features
+
+Two features need a little extra setup after the panel is up:
+
+- **Self-service servers** let users create their own servers from a guided wizard. The panel ships a **Java Server** egg and the wizard uses an egg whose name starts with `Java`. You can tune it with the `PTERODACTYL_SELF_SERVICE_*` variables in `.env`. See [Self-service servers](/docs/stratosphere/features/self-service).
+- **Custom domains** let users point their own domain at a server. They need the bundled Minecraft router, installed with one command on the machine the A records point to. See [Domains](/docs/stratosphere/features/domains).
+
+Next, read [Updating](/docs/stratosphere/getting-started/updating) and set up your nodes in [Nodes and Wings](/docs/stratosphere/getting-started/nodes).

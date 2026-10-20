@@ -1,0 +1,57 @@
+---
+title: Natural-language search
+description: The browser-side classifier and rule-based slot filling behind the search box.
+---
+
+The search box does not only search. It also understands sentences such as `restart lobby` or `create a backup called weekly for skyblock`. A small classifier and a set of plain rules work that out **in the browser, offline, in a millisecond**, and nothing is sent anywhere. There is no AI service involved. What it understands is described under [Search](/docs/stratosphere/features/search).
+
+## How it works
+
+- A small trained text classifier — a **logistic regression** on words, word pairs and groups of letters, about 100 KB — says what is meant.
+- Plain rules find what it is about (slot filling): the names of the person's own servers (matched loosely, so `surv` and `survivel` work but numbers must be exact), `called ...` for the name of a backup, and `run ... on ...` for a console command.
+- It runs in the browser, offline, and nothing is sent anywhere.
+
+## The files
+
+| File | What it is |
+|---|---|
+| `tools/nlu/engine.js` | The engine: the classifier and the rules. Edit this file, never the generated one. |
+| `tools/nlu/intents.js` | The grammars the training phrases are made from — many ways of saying each thing. |
+| `tools/train-nlu.js` | Trains the classifier and writes the generated file. |
+| `public/js/stratosphere-nlu.js` | The generated file: `engine.js` with the trained model put in. It is used by the dashboard and by the admin pages alike. |
+
+The engine exposes `interpret(phrase, context)` and a `debug` object with what the last call saw. `context` carries the person's servers and the server that is currently open.
+
+## What it leaves alone
+
+- A phrase the classifier is not confident about (the confidence threshold is `0.6`) is treated as a normal search.
+- Anything that is not a request — `lobby`, `how do i restart a server`, `hello` — is searched for as before.
+- The permissions of the person are respected, so a server they may not stop is never offered a stop.
+
+## Training
+
+```bash
+npm run nlu:train
+```
+
+This runs `node tools/train-nlu.js`, which expands the grammars in `tools/nlu/intents.js` into a few thousand phrases — with polite beginnings and endings, other words for the same thing and typing mistakes — trains the classifier on them and writes `public/js/stratosphere-nlu.js`.
+
+The phrases are generated with the same random choices every time, so the same input always produces the same file. A test, `resources/scripts/lib/nlu.spec.ts`, compares the file in the repository with what the training makes and **fails when it is stale**. After you change anything under `tools/nlu`, retrain and commit the regenerated `public/js/stratosphere-nlu.js` too.
+
+## Adding an intent
+
+1. Add the ways of saying it to `tools/nlu/intents.js` (in a phrase, `{t}` is "the server" in any of the ways people point at one, `_name_` is the name of a backup and `_cmd_` a console command).
+2. Retrain with `npm run nlu:train`.
+3. Add a sentence for the new intent to `resources/scripts/lib/nlu.spec.ts`, so it stays understood.
+
+## Trying a phrase
+
+```bash
+node tools/nlu/try.js "restart lobby"
+```
+
+This prints the phrase as the classifier saw it (the masked text), the top intents it ranked, and what it found — the intent, the servers, a backup name, a command, a page or the theme. Pass several phrases to compare them:
+
+```bash
+node tools/nlu/try.js "restart lobby" "create a backup for skyblock"
+```

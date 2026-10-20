@@ -1,0 +1,126 @@
+---
+title: Troubleshooting
+description: Common Stratosphere problems and how to fix them.
+---
+
+Most problems on a Stratosphere panel come from one of three places: the panel files and caches, a node running
+an old Wings, or a tool that needs the Stratosphere helper. Work through the sections below in that order.
+
+<Callout type="info">
+  Stratosphere is a fork of Pterodactyl, so problems that are not about a Stratosphere-specific feature are
+  usually answered by the [Pterodactyl documentation](https://pterodactyl.io) and its community. For
+  Stratosphere itself, open an issue at
+  [kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel/issues).
+</Callout>
+
+## The panel shows an error or a blank page after an update
+
+Almost always an unfinished update. Run the last steps of the [update procedure](/docs/stratosphere/getting-started/updating)
+again from `/var/www/pterodactyl`:
+
+```bash
+sudo chmod -R 755 storage/* bootstrap/cache
+sudo composer install --no-dev --optimize-autoloader
+sudo php artisan view:clear
+sudo php artisan config:clear
+sudo php artisan route:clear
+sudo php artisan migrate --seed --force
+sudo chown -R www-data:www-data /var/www/pterodactyl/*
+sudo php artisan queue:restart
+```
+
+Then hard refresh the browser (`Ctrl+Shift+R`) — an old cached bundle is a common cause of a broken-looking panel.
+If nothing helps, restore the backup the updater made in `/var/backups/stratosphere` or one you took yourself
+(see [Admin > Updates](/docs/stratosphere/admin/updates)).
+
+## A node says its Wings is too old
+
+The Stratosphere Wings (`stratwings`) updates itself when the panel asks, but a Wings build from before that
+feature cannot. Replace the binary once by hand:
+
+```bash
+sudo curl -fL -o /usr/local/bin/wings.new https://github.com/kokofixcomputers/stratwings/releases/download/nightly/wings_linux_amd64   # arm64 on ARM
+sudo chmod +x /usr/local/bin/wings.new && sudo mv /usr/local/bin/wings.new /usr/local/bin/wings && sudo systemctl restart wings
+```
+
+After that use **Admin > Nodes > Update nodes**, or **Update Wings** on the node's page. Check that the machine
+running the node can reach `WINGS_UPDATE_URL` (the nightly release of `stratwings` by default). See
+[Nodes and Wings](/docs/stratosphere/getting-started/nodes).
+
+## A node says it needs the Stratosphere Wings
+
+Jobs, the [server importer](/docs/stratosphere/features/importer) and node certificates need features that only
+the Stratosphere fork of Wings has. A node running the original Wings tells you so instead of failing quietly.
+Update Wings as above.
+
+## Custom domains do not work
+
+- The domain needs an **A record** pointing at the machine that runs the Minecraft router, and the router has to
+  be installed there (`sudo php artisan p:router:install`). See [Domains](/docs/stratosphere/features/domains).
+- **Nothing else may listen on port 25565** on that machine. If one of your own servers uses that port, move it
+  somewhere else.
+- If the panel is reached through an internal address, set `PTERODACTYL_DOMAINS_TARGET_IP` in `.env` to the public
+  address players should connect to.
+- **Turn the Cloudflare proxy off** for the record. Minecraft is not web traffic — the record has to point
+  directly at the machine.
+- Players connecting through the router are seen with the router's address on the backend. Only set
+  `PROXY_PROTOCOL=1` if the backend understands it (a Velocity server with `haproxy-protocol = true`).
+
+## Auto sleep never wakes a server
+
+Waking a sleeping server on join needs the server to have a domain on the Minecraft router — a stopped server has
+nothing that could notice a player. Two more things to check:
+
+- Only an actual **join** wakes a server. Looking at the server list does not, and neither does refreshing it.
+- A server that its owner stopped by hand is never woken automatically; only one that auto sleep stopped is.
+
+If the router is too old, waking does not work: run `sudo php artisan p:router:install` again to install the
+current one. The wording players see can be changed with `SLEEPING_MOTD` and `WAKING_MOTD` in `/etc/mc-router.env`.
+See [Auto sleep](/docs/stratosphere/features/auto-sleep).
+
+## The player window is empty, or tab completion does not work
+
+Both come from the [Stratosphere helper](/docs/stratosphere/features/helper) — a plugin for Paper and Spigot, or a
+mod for Fabric and NeoForge. When the panel says there is a newer helper, install it again from the player list;
+an old helper answers fewer things (see the protocol levels on the
+[console protocol](/docs/stratosphere/developing/console-protocol) page).
+
+- **No tab completion:** the panel falls back to a built-in list of vanilla and Paper commands. If
+  `stratosphere.commands.json` is missing or invalid, the plugin/mod did not write it, or it is out of date
+  compared to the jars in `plugins/` or `mods/` (the console says so).
+- **No armor trim colors:** the helper sends the trim with the item. Install the current helper again.
+- **Shulker boxes do nothing on double click:** the helper needs protocol 9.
+
+## https does not work on the panel
+
+- Is panel-edge running? `sudo bash tools/panel-edge/install.sh` installs it; the certificate page says whether
+  panel-edge is connected. See [Certificates](/docs/stratosphere/admin/certificates).
+- Behind a reverse proxy the panel has to know it, or it builds `http://` links: set `TRUSTED_PROXIES` (the
+  installer does this).
+- A certificate that was rejected is usually a chain in the wrong order, a key that does not match, or an expired
+  certificate. The page says which one it is.
+
+## Extensions broke the panel
+
+A failing extension is normally left out and the reason is on the Extensions page and in `storage/logs`. If the
+panel does not work at all:
+
+```bash
+php artisan p:extension:disable <id>
+```
+
+or set `STRATOSPHERE_EXTENSIONS=false` in `.env` to start nothing at all. Do not use `php artisan route:cache` on
+a panel with extensions that add routes. See [Extensions](/docs/stratosphere/admin/extensions).
+
+## CurseForge does not show up
+
+The CurseForge tab only appears after an admin saved an API key (or set `CURSEFORGE_API_KEY`). If the key was
+rejected, check it again from Admin > Settings > CurseForge. Without a key nothing about CurseForge is shown at
+all, and Modrinth keeps working. See [Mods and plugins](/docs/stratosphere/features/mods-and-plugins).
+
+## Files cannot be deleted, or disk usage seems too high
+
+If the trash bin is on, deleted files and folders are moved to `.stratosphere-trash` inside the server and count
+toward its disk limit until they are restored, deleted for good or expired (30 days by default). Emptying the
+trash bin or lowering the retention period under [Admin > Settings > Trash](/docs/stratosphere/admin/trash)
+frees the space.

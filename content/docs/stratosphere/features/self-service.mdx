@@ -1,0 +1,48 @@
+---
+title: Self-Service Servers
+description: Let users create their own Minecraft servers from the dashboard.
+---
+
+Stratosphere can let users create a Minecraft server for themselves. Servers are placed on any public node that has room and a free port, using the configured egg and resource limits. An admin turns the feature on and off; by default it is **enabled**.
+
+## The create wizard
+
+**Create new** in the dashboard opens a guided wizard with four steps: **Name & software**, **Version**, **Node** and **Review**.
+
+- **Name & software**: type a server name and pick your software, or switch to a modpack instead.
+- **Version**: pick the version (and build) of the software, or the modpack version.
+- **Node**: pick a node, or let the panel pick the best one. Each node shows a ping measured from your browser, so a lower number means less lag for you. Memory, disk and the free ports are shown as well.
+- **Review**: check the summary. You can open **Edit specs** to change the memory, disk and CPU within the limits an admin set, or reset them to the defaults.
+
+When you press **Create server**, the server is created and installed. A progress list shows each step, and when it is done you are taken to the new server.
+
+## Requirements
+
+- The panel ships with a single **Java Server** egg. Its install script only creates the folder; the Versions tab and the create wizard put the actual software in place, so the same egg runs Vanilla, Paper, Purpur, Fabric, Forge, NeoForge, Velocity and more.
+- The wizard automatically uses an egg whose name starts with `Java` (falling back to Paper, Vanilla, or any Minecraft egg). An admin can point it at a specific egg with `PTERODACTYL_SELF_SERVICE_EGG`.
+- A new server starts with **two allocations**: the one it is played on and one more for things such as a voice chat plugin or a web map. A node with a single free port gives a server with just that one.
+
+## Settings
+
+Every option comes from `.env`:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `PTERODACTYL_SELF_SERVICE_ENABLED` | `true` | Turn the "Create new" button on or off |
+| `PTERODACTYL_SELF_SERVICE_EGG` | auto | Egg id to create servers from |
+| `PTERODACTYL_SELF_SERVICE_LOCATIONS` | any | Comma separated location ids |
+| `PTERODACTYL_SELF_SERVICE_MAX_SERVERS` | `3` | Servers per user, `0` for no limit |
+| `PTERODACTYL_SELF_SERVICE_ALLOCATIONS` | `4` | Allocations a server may have in total (it starts with two) |
+| `PTERODACTYL_SELF_SERVICE_MEMORY` / `_DISK` / `_CPU` | `2048` / `10240` / `200` | Default specs |
+| `PTERODACTYL_SELF_SERVICE_MAX_MEMORY` / `_MAX_DISK` / `_MAX_CPU` | `8192` / `51200` / `400` | Upper limit of the spec sliders |
+
+## Admins are never limited
+
+Root administrators are never limited by `PTERODACTYL_SELF_SERVICE_MAX_SERVERS`. A user who may create servers gets no server limit at all, so admins can always make one for themselves.
+
+## API
+
+Client routes:
+
+- `GET /api/client/self-service` returns whether you may create a server, the limits and the available nodes.
+- `POST /api/client/self-service` creates the server.

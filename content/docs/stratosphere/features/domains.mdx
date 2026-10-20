@@ -1,0 +1,46 @@
+---
+title: Domains
+description: Give a server a domain on your own DNS or under a domain of the admin.
+---
+
+A server can have a domain in two ways, and an admin can turn either or both on under **Admin > Settings > Domains**.
+
+## Your own domain
+
+1. Add an **A record** at your own DNS provider that points at the panel machine, which is the Minecraft router. The address is `PTERODACTYL_DOMAINS_TARGET_IP`, or the panel's own address when that is empty.
+2. Add the domain on the Domains page of the server. The panel then checks the record and sends players to the server.
+
+A switch in the settings turns this on and off; the default is `PTERODACTYL_DOMAINS_ENABLED`.
+
+## A name under a domain of the admin
+
+An admin adds one or more domains (`example.com`, `mc-hosting.net`, and so on), each with its own DNS access. On the Domains page you type a name such as `play` and pick one of those domains from a list. The panel checks the name is free, makes the A record at the provider, and removes the record again when the name, the server, or the whole domain is removed.
+
+After that it is a normal domain: the router sends players to the server, and https works as for any other (see [Certificates](/docs/stratosphere/admin/certificates)).
+
+## Name rules
+
+- Names the panel keeps for itself cannot be taken (`www`, `mail`, `admin`, `api`, and others; see `PTERODACTYL_DOMAINS_RESERVED`).
+- A name that already has a DNS record of any kind at the provider cannot be taken. A record somebody made by hand is never taken over.
+- The host of the panel cannot be taken.
+- A name is one label: letters, numbers and dashes, up to 63 characters.
+
+## Removing names and domains
+
+- Removing a name removes its DNS record. If the provider cannot be reached, the name goes anyway and the record is logged as left behind.
+- Deleting a domain of the admin removes every name under it, and their records.
+- Deleting a server removes its names the same way.
+
+Setting a name up needs an admin with `settings.domains.view` and `settings.domains.update`. See [Domains administration](/docs/stratosphere/admin/domains).
+
+## Waking and domains
+
+A domain matters for [auto sleep](/docs/stratosphere/features/auto-sleep): wake on join only works when the server has a domain on the router, because a sleeping server has nothing else that could notice a player.
+
+## API
+
+Client routes:
+
+- `GET /api/client/servers/{server}/domains` (returns `meta.zones`)
+- `POST /api/client/servers/{server}/domains` with `zone_id` and `label` (or `domain`)
+- `GET /api/client/servers/{server}/domains/check?zone_id=&label=`

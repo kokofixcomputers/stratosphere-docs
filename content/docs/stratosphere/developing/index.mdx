@@ -1,0 +1,77 @@
+---
+title: Developing Stratosphere
+description: How to work on the panel, its docs, the Wings fork, the Go tools, the helper plugin and mod, and extensions.
+---
+
+Stratosphere is more than one program. The panel is a Laravel application with a React frontend, the daemon on the nodes is a fork of Wings, two small Go tools handle domains and HTTPS, and a helper plugin/mod talks to the panel over the console. This section shows where each part lives and how to work on it.
+
+## The repositories
+
+- **Panel** — [github.com/kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel): the PHP/Laravel panel, the React/TypeScript frontend, the Minecraft tools, the extensions and the Go tools.
+- **Wings fork** — [github.com/kokofixcomputers/stratwings](https://github.com/kokofixcomputers/stratwings): the Stratosphere fork of the Wings daemon that runs the game servers on a node.
+
+## The panel
+
+The panel is PHP 8.2 or 8.3 with a React and TypeScript frontend. `yarn preview` runs the real interface against an in-memory mock of the panel API, so you can work on the UI without PHP, a database or Wings.
+
+See [Panel development](/docs/stratosphere/developing/panel) for the requirements, the scripts and where the frontend lives.
+
+## The documentation
+
+These pages are MDX files. A page starts with frontmatter (`title` and `description`) and then uses `##` sections; the page title comes from the frontmatter, so you do not write an `#` heading. Follow the existing pages when you add one and keep links inside the documented set of pages.
+
+## The Wings fork (stratwings)
+
+Stratosphere uses its own fork of Wings. The panel updates it over the network when an admin asks, and it can be given a trusted HTTPS certificate for a node straight from the panel, with no certbot and no files to copy.
+
+- Installing the fork uses the same config and service as Wings; see `FORK.md` in the stratwings repository.
+- The panel's update flow is described under [Nodes](/docs/stratosphere/getting-started/nodes).
+- Giving a node a certificate is described under [Certificates](/docs/stratosphere/admin/certificates).
+
+## The Go tools
+
+`mc-router` and `panel-edge` are small Go programs. Build one with `go build` and run its tests with `go test ./...` (Go 1.21 or newer required).
+
+Both are covered on the [Router and edge](/docs/stratosphere/developing/router) page.
+
+## The helper plugin and mod
+
+The helper is what tells the panel about a running server: the command tree, the online players, their vitals and inventories, TPS and MSPT. There are two builds that speak the same protocol:
+
+- **Plugin** — `helper-plugin/`, for Paper and Spigot.
+- **Mod** — `helper-mod/`, for Fabric and NeoForge. It is one jar per loader, built with `./gradlew test mods` (jars in `build/libs`); `scripts/bundle.sh` also copies them into `public/helper` for the panel.
+
+The protocol itself is documented under [Console protocol](/docs/stratosphere/developing/console-protocol).
+
+## Extensions
+
+Extensions add to the panel without changing its files: new routes, admin pages, settings, a card on a server's Settings page, or a change to what the router is told. Start one from the template and build it into a `.stratext` package.
+
+See [Extensions](/docs/stratosphere/developing/extensions) for the manifest, hooks, routes and the browser API.
+
+<Cards>
+  <Card title="Panel development" href="/docs/stratosphere/developing/panel">
+    Requirements, scripts and the frontend layout.
+  </Card>
+  <Card title="Extensions" href="/docs/stratosphere/developing/extensions">
+    Build and package an extension.
+  </Card>
+  <Card title="Commands JSON" href="/docs/stratosphere/developing/commands-json">
+    The console tab completion file a plugin or mod writes.
+  </Card>
+  <Card title="Console protocol" href="/docs/stratosphere/developing/console-protocol">
+    How the helper plugin and mod talk to the panel.
+  </Card>
+  <Card title="Natural-language search" href="/docs/stratosphere/developing/nlu">
+    The classifier behind the search box.
+  </Card>
+  <Card title="Router and edge" href="/docs/stratosphere/developing/router">
+    The mc-router and panel-edge Go tools.
+  </Card>
+  <Card title="StratPanel on GitHub" href="https://github.com/kokofixcomputers/StratPanel">
+    Source of the panel, the frontend and the tools.
+  </Card>
+  <Card title="stratwings on GitHub" href="https://github.com/kokofixcomputers/stratwings">
+    Source of the Wings fork.
+  </Card>
+</Cards>

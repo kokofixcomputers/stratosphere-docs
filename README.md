@@ -1,4 +1,4 @@
-# Hydrodactyl Documentation
+# Stratosphere Documentation
 
 Run development server:
 

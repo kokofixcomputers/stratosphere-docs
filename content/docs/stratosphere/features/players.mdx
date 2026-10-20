@@ -1,0 +1,36 @@
+---
+title: Players
+description: Manage operators and the whitelist, and open a player's inventory, ender chest, shulker boxes, vitals and actions.
+---
+
+The **Players** tools cover both who may join and what an online player is carrying. Operators and the whitelist are managed from the console page; the player window shows the rest.
+
+## Operators & whitelist
+
+From the console page you can manage the server's operator and whitelist lists. These are the familiar `ops.json` and `whitelist.json` files, shown with **player heads**, so you add or remove a player without editing JSON by hand.
+
+## The player window
+
+**Players > a player who is online** opens the player window. It shows the player's **inventory** and **ender chest**, drawing the **hearts**, **hunger** bar and **level** from the helper's vitals.
+
+## Shulker boxes
+
+In the player window, **double click a shulker box** (or click it and press **Open**) to look inside. The window is the same as the ender chest: **3 rows of 9**, titled with the colour of the box.
+
+- Items move like in the ender chest: drag one, or click it and then a slot. The same item is added to a stack; two different items trade places. **Delete stack** takes an item out for good.
+- The change is written to the box itself, so the player has it the next time they open it, whether the box was in their inventory or in their ender chest. An emptied box is the same as one that was never filled.
+- If the box is moved or dropped while you look at it, the window says it is not a shulker box any more and goes back. **Back** returns to where you came from, and so does `Escape`.
+
+## Armor trims
+
+A piece of armor with a trim shows it on its icon in the inventory, the ender chest and shulker boxes, drawn the way the game draws it: the armor icon with the trim over it in the colour of the trim's material (gold, redstone, amethyst, and so on). Armor made of the same material as its trim gets the darker colour, like in the game. The pattern is not drawn on the icon (the game does not draw it there either); the tooltip names the pattern and material, such as "Coast Armor Trim" and "Gold Material".
+
+## The player list and actions
+
+The **player list** is filled in by the helper. From the player window you also get the **Whisper**, **Kick** and **Ban** buttons. They send `msg`, `kick` and `ban` on the server console, so the server has to be running and you need the console permission. A reason or message is made one line, and a name that could carry a second command is refused.
+
+<Callout type="warn" title="Needs the helper and the console permission">
+The player window needs the [Stratosphere helper](/docs/stratosphere/features/helper) and the same permission as the [console](/docs/stratosphere/features/console). Shulker boxes need helper protocol 9; with an older helper the double click does nothing.
+</Callout>
+
+If a trim's colour is missing, or the panel says a newer helper is available, reinstall the helper from the player list.

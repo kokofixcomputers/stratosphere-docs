@@ -3,8 +3,13 @@ import type { Metadata } from 'next';
 import { DocsPage, DocsBody, DocsTitle, DocsDescription } from 'fumadocs-ui/page';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { File, Files, Folder } from 'fumadocs-ui/components/files';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
 import defaultMdxComponents, { createRelativeLink } from 'fumadocs-ui/mdx';
 import { source } from '@/lib/source';
+import { site } from '@/lib/site';
 
 interface PageParams {
   params: Promise<{
@@ -31,8 +36,8 @@ export default async function Page({ params }: PageParams) {
       }}
       lastUpdate={page.data.lastModified ? new Date(page.data.lastModified) : undefined}
       editOnGithub={{
-        owner: 'blueprintframework',
-        repo: 'hydrodactyl-docs',
+        owner: site.github.owner,
+        repo: site.github.docsRepo,
         sha: 'main',
         path: `content/docs/${page.file.path}`,
       }}
@@ -48,7 +53,15 @@ export default async function Page({ params }: PageParams) {
             Tabs,
             Tab,
             Card,
-            Cards
+            Cards,
+            Steps,
+            Step,
+            Accordions,
+            Accordion,
+            Files,
+            File,
+            Folder,
+            TypeTable,
           }}
         />
       </DocsBody>

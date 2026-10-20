@@ -1,0 +1,53 @@
+---
+title: Getting Started
+description: What Stratosphere is, what you need to run it, and how the install and update path works.
+---
+
+## What Stratosphere is
+
+Stratosphere is a fork of the Pterodactyl Panel focused on **Minecraft**. It keeps everything that makes Pterodactyl good — isolated Docker containers, Wings, the permission system and the API — and adds a modern light UI plus the Minecraft tools you would otherwise need plugins and scripts for.
+
+Things you would otherwise bolt on are built in, including a **Versions tab** that installs Paper, Purpur, Spigot, Fabric, Quilt, Forge, NeoForge or Velocity in one click, a typed editor for `server.properties`, a proxy configurator for `velocity.toml`, Modrinth mods and plugins, operator and whitelist management, a guided server-creation wizard, custom domains, and background archiving.
+
+Stratosphere is not affiliated with or endorsed by the Pterodactyl project. It is MIT licensed like the original.
+
+## Requirements
+
+Stratosphere installs on top of a normal Pterodactyl setup, so the requirements are the usual Pterodactyl ones.
+
+| Item | Notes |
+|---|---|
+| Operating system | Linux, with root access |
+| PHP | 8.2 or 8.3 (`^8.2 \|\| ^8.3`) |
+| PHP extensions | `json`, `mbstring`, `pdo`, `pdo_mysql`, `posix`, `zip` |
+| Database | MySQL or MariaDB |
+| Cache and queue | Redis (the queue uses `QUEUE_CONNECTION=redis`) |
+| Web server | nginx or Apache |
+| Base panel | A working Pterodactyl panel and Wings installed and running |
+
+You install Stratosphere *on top of* that base; it is not a standalone installer.
+
+## Install and update path
+
+1. **Get a base running.** Follow the official [Pterodactyl guide](https://pterodactyl.io/panel/1.0/getting_started.html) (or a community installer) to get a normal Pterodactyl panel and Wings running.
+2. **Switch to Stratosphere.** Extract the Stratosphere archive over the panel, then run the composer, cache, migration and ownership steps described in the installation page.
+3. **Keep it updated.** Use the full release archive, the interface-only updater, or the admin Updates page.
+
+Updating a Pterodactyl panel with the Stratosphere archive *is* the migration, so the same steps serve both a fresh switch and every later update.
+
+## Where to go next
+
+<Cards>
+  <Card title="Installation" href="/docs/stratosphere/getting-started/installation">
+    Install Stratosphere over a Pterodactyl panel and Wings.
+  </Card>
+  <Card title="Updating" href="/docs/stratosphere/getting-started/updating">
+    Full updates, interface-only updates and the automatic nightly build.
+  </Card>
+  <Card title="Nodes and Wings" href="/docs/stratosphere/getting-started/nodes">
+    Set up a node and let Stratosphere Wings update itself.
+  </Card>
+  <Card title="Features" href="/docs/stratosphere/features">
+    The Minecraft tools Stratosphere adds on top of Pterodactyl.
+  </Card>
+</Cards>

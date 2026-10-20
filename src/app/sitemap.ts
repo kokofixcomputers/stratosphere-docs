@@ -1,9 +1,10 @@
 import { source } from '@/lib/source';
+import { site } from '@/lib/site';
 import type { MetadataRoute } from 'next';
 
 export const dynamic = 'force-static';
 
-const baseUrl = 'https://hydrodactyl.dev';
+const baseUrl = site.url;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const docPages = source.getPages().map((page) => ({

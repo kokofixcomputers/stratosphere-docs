@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
+import { site } from '@/lib/site';
 
 export function GitHubStats() {
   const [stars, setStars] = useState<number | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch('https://api.eva.pink/api/stars/blueprintframework/hydrodactyl').then(r => r.json()),
-    ])
-      .then(([repo1]) => {
-        setStars((repo1.stars || 0));
+    fetch(
+      `https://api.eva.pink/api/stars/${site.github.owner}/${site.github.repo}`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setStars(data.stars || 0);
       })
       .catch(console.error);
   }, []);

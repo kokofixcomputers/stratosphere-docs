@@ -1,0 +1,32 @@
+---
+title: Settings
+description: The Admin > Settings pages, including the CurseForge API key.
+---
+
+## Settings pages
+
+**Admin > Settings** collects the panel settings in tabs. Each tab has its own "see" and "change" permissions, so a role can be given one area without the rest.
+
+| Tab | Holds | Docs |
+| --- | --- | --- |
+| General | Panel URL and general settings | |
+| Branding | Branding, announcements and links | |
+| Mail | Mail settings and test mails | |
+| Advanced | Advanced settings | |
+| Authentication | Captcha, passkeys and self sign up | [Authentication](/docs/stratosphere/admin/authentication) |
+| Providers | The services people can sign in with | [Authentication](/docs/stratosphere/admin/authentication) |
+| Domains | The domains people can take a server name under | [Domains](/docs/stratosphere/admin/domains) |
+| Certificates | The certificates the panel and nodes are served with | [Certificates](/docs/stratosphere/admin/certificates) |
+| Trash | The trash bin and how long it keeps things | [Trash](/docs/stratosphere/admin/trash) |
+| CurseForge | The CurseForge API key | below |
+
+## CurseForge
+
+With an API key from [console.curseforge.com](https://console.curseforge.com/), the Content page of every server gets a **CurseForge** tab next to Modrinth. See [Mods & plugins](/docs/stratosphere/features/mods-and-plugins).
+
+- Paste the key on the **CurseForge** tab and save. The panel checks it with CurseForge right away, and the page has a button to check it again.
+- The key is stored encrypted in the settings table and is **never sent to a browser**.
+- Without a key, nothing about CurseForge shows up anywhere in the panel.
+- A key in the environment (`CURSEFORGE_API_KEY`) is used when no key was saved in the panel.
+
+The browser never talks to CurseForge directly: it asks the panel and the panel asks CurseForge, so the key stays secret. Answers are cached for a few minutes. Permissions: `settings.curseforge.view` and `settings.curseforge.update`.

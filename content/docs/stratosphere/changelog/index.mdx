@@ -1,0 +1,51 @@
+---
+title: Changelog
+description: Stratosphere release channels, published releases and version history.
+---
+
+import Changelog from '@/components/ui/Changelog';
+
+Stratosphere follows [Semantic Versioning](http://semver.org). Two kinds of builds are published on
+[kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel/releases):
+
+| Channel | When it is built | What is in it |
+| --- | --- | --- |
+| **Nightly** | Every push to the `1.0-develop` branch | `panel.tar.gz` (the whole panel, built frontend included) and `panel-ui.tar.gz` (the interface only) |
+| **Release** | Every `v*` tag | The same two archives, frozen at that version |
+
+Every archive already contains the built frontend, so there is nothing to compile on your server.
+
+## Installing an update
+
+<Cards>
+  <Card title="Updating the panel" href="/docs/stratosphere/getting-started/updating">
+    Full archive updates, interface-only updates with p:update-ui, and the admin Updates page
+  </Card>
+  <Card title="Updating the panel from the admin area" href="/docs/stratosphere/admin/updates">
+    The updater service, backups and rollbacks
+  </Card>
+</Cards>
+
+<Callout type="info">
+  A build that needs a database migration always needs the full update
+  (`panel.tar.gz`). `panel-ui.tar.gz` only swaps the interface folders in `public/`.
+</Callout>
+
+## Published releases
+
+Tagged releases published on GitHub are listed here automatically. Nightly builds are not releases,
+so they are left out — see the
+[releases page](https://github.com/kokofixcomputers/StratPanel/releases) for those.
+
+<Changelog />
+
+## Full history
+
+<Cards>
+  <Card title="Changelog (v1)" href="/docs/stratosphere/changelog/history">
+    Every release from v1.0.0 to v1.12.3
+  </Card>
+  <Card title="Changelog (v0)" href="/docs/stratosphere/changelog/history-v0">
+    Stratosphere before v1.0.0 (v0.4.0 to v0.7.19)
+  </Card>
+</Cards>

@@ -1,0 +1,53 @@
+---
+title: Administration
+description: How the Stratosphere admin area is organized, who can use it, and where each page lives.
+---
+
+## Root admins and roles
+
+The admin area is split between **root admins** and ordinary users who have been given **roles**.
+
+- **Root admins** are the accounts that were admins before roles existed. They can do everything and cannot be limited.
+- Everybody else is an ordinary user until a role is given to them. A role is a name, a color and a set of permissions grouped by area.
+
+The sidebar only shows the pages a person can open, and they land on the first page they may open. Changes to a role apply to its members on their next request. See [Roles](/docs/stratosphere/admin/roles).
+
+## Where the Stratosphere pages live
+
+Most Stratosphere-specific admin work is under **Admin > Settings**, which holds the CurseForge, Authentication, Providers, Domains, Certificates and Trash tabs, and on the **Roles**, **Extensions** and **Updates** pages of the sidebar.
+
+<Callout type="info">
+  The admin area is built with **AdminLTE** and has no dark theme yet, unlike the rest of the panel. See [Theme](/docs/stratosphere/features/theme).
+</Callout>
+
+## Admin pages
+
+<Cards>
+  <Card title="Roles" href="/docs/stratosphere/admin/roles">
+    Root admins, roles, permission groups and the rules for who can change what.
+  </Card>
+  <Card title="Settings" href="/docs/stratosphere/admin/settings">
+    The Admin > Settings pages, including the CurseForge API key.
+  </Card>
+  <Card title="Authentication" href="/docs/stratosphere/admin/authentication">
+    Captcha, OAuth providers, passkeys and self sign up.
+  </Card>
+  <Card title="Domains" href="/docs/stratosphere/admin/domains">
+    DNS domains the panel hands out to servers, with Cloudflare access.
+  </Card>
+  <Card title="Certificates" href="/docs/stratosphere/admin/certificates">
+    HTTPS for the panel and nodes, Let's Encrypt and port 80 redirects.
+  </Card>
+  <Card title="Trash" href="/docs/stratosphere/admin/trash">
+    Keep deleted server files and schedules for a set number of days.
+  </Card>
+  <Card title="Extensions" href="/docs/stratosphere/admin/extensions">
+    Install and manage `stratext` extensions and their settings.
+  </Card>
+  <Card title="Updates" href="/docs/stratosphere/admin/updates">
+    Update the panel, router, edge and node software, and manage backups.
+  </Card>
+  <Card title="Self service" href="/docs/stratosphere/features/self-service">
+    Let users create their own servers from a built-in egg.
+  </Card>
+</Cards>

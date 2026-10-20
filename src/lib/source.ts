@@ -2,7 +2,7 @@ import { docs } from '@/.source';
 import { loader } from 'fumadocs-core/source';
 import { createElement } from 'react';
 import { icons } from 'lucide-react';
-import HydrodactylLogo from '@/components/ui/HydrodactylLogo';
+import StratosphereLogo from '@/components/ui/StratosphereLogo';
 import BlueprintLogo from '@/components/ui/BlueprintLogo';
 import ElytraLogo from '@/components/ui/ElytraLogo';
 
@@ -16,8 +16,8 @@ export const source = loader({
       return
     }
     switch (icon) {
-      case 'hydrodactyl':
-        return HydrodactylLogo();
+      case 'stratosphere':
+        return StratosphereLogo({ className: 'size-6 text-brand' });
       case 'blueprint':
         return BlueprintLogo();
       case 'elytra':

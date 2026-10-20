@@ -1,0 +1,85 @@
+---
+title: Panel development
+description: Set up, preview and build the Stratosphere panel and its React frontend.
+---
+
+The panel is a Laravel application with a React and TypeScript frontend built by webpack. You can work on the whole interface, including the Minecraft tools, without a PHP backend: `yarn preview` runs it against a mocked API.
+
+## Requirements
+
+- **Node.js 22 or newer** — the `engines` field of `package.json` requires it.
+- **PHP 8.2 or 8.3** — the panel's `composer.json`.
+- **Yarn 1.x** — the frontend dependencies.
+- **Go 1.21 or newer** — only if you work on the `mc-router` or `panel-edge` tools.
+
+## Install and preview
+
+```bash
+yarn install
+yarn preview
+```
+
+`yarn preview` (which runs `node preview/server.js`) serves the real frontend at **http://localhost:4000** against an in-memory mock of the panel API and a fake Wings console. No PHP, database or Wings is involved, so you can change the UI and see it immediately.
+
+<Callout type="info" title="Previewing a proxy">
+  Add the `PREVIEW_PROXY=1` environment variable to preview a Velocity server instead: `PREVIEW_PROXY=1 yarn preview`.
+</Callout>
+
+## Checks
+
+Run all three before you open a pull request:
+
+```bash
+yarn tsc     # tsc --noEmit, type checking
+yarn lint    # eslint over resources/scripts
+yarn test    # jest, the unit tests
+```
+
+Many of the helpers under `resources/scripts/lib/` have their `*.spec.ts` next to them, so adding logic usually means adding a test in the same folder.
+
+## Building for production
+
+```bash
+yarn build:production
+```
+
+This cleans the old assets and builds the minified, hashed production bundle into `public/assets/`. `yarn package` builds the production assets and creates the panel archive.
+
+## Other frontend commands
+
+These come from `BUILDING.md` and match scripts in `package.json`:
+
+- `yarn run build` builds the development assets.
+- `yarn run watch` rebuilds the assets as files change.
+- `yarn run serve` starts the webpack dev server with hot module reloading.
+
+Until you have built the assets at least once, the panel can return a 500 error about a missing `manifest.json`.
+
+## Where the frontend lives
+
+- **`resources/scripts/`** — the React app: `index.tsx` (the entry), `routers/`, `state/`, `api/`, `context/` and the shared `helpers.ts`.
+- **`resources/scripts/components/`** — the UI: `App.tsx`, `dashboard/`, `server/`, `elements/`, `palette/` and `auth/`.
+- **`resources/scripts/lib/`** — plain TypeScript logic and helpers (`theme.ts`, `palette.ts`, `nlu.ts`, `commandTree.ts`, and so on), each with its tests alongside.
+- **`resources/scripts/assets/css/palette.js`** — the colours of the light and dark themes.
+
+The admin area (`/admin`) is rendered from Blade with AdminLTE, not React, and has no dark theme yet.
+
+## Building the theme
+
+The theme colours are defined once in `resources/scripts/assets/css/palette.js`. After you change a colour, regenerate the CSS variables:
+
+```bash
+node tools/build-theme.js
+```
+
+This writes `resources/scripts/assets/css/theme.css` (the `--c-*` variables for the light theme, the dark theme and the forced-light `.theme-light` scope). Do not edit `theme.css` by hand; `tailwind.config.js` maps the Tailwind colours onto those variables.
+
+## Minecraft textures
+
+The panel draws inventory items and blocks from Minecraft textures that ship with it. To add the textures of another game version:
+
+```bash
+node tools/fetch-mc-textures.mjs [version] [folder]
+```
+
+It downloads that version's client from Mojang (kept in `.cache` and checked against the published hash), reads only the pictures and models it needs, and writes them with the same layout as the bundled versions (`mc-assets/<version>/blocks`, `items`, `entity` and `blocks_models.json`). Use it to support a Minecraft version newer than the bundled ones. The result is build output, like the rest of `public/tools`.

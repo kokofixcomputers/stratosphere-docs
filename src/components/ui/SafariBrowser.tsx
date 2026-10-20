@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { site } from "@/lib/site";
 
 interface SafariBrowserProps {
   src: string;
@@ -14,7 +15,7 @@ export const SafariBrowser = ({
   alt,
   width,
   height,
-  url = "panel.hydrodactyl.dev",
+  url = site.panelHost,
   className = "",
 }: SafariBrowserProps) => {
   return (

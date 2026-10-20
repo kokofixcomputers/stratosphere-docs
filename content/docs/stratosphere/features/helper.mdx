@@ -1,0 +1,48 @@
+---
+title: Helper
+description: Install the Stratosphere helper plugin or mod to unlock tab completion, the player tools, TPS and armor trims.
+---
+
+The **Stratosphere helper** is what connects the panel to the running server. It is one small program with a jar for each platform: a plugin for Paper and Spigot, and a mod for Fabric and NeoForge.
+
+## The jars
+
+| Jar | For | Needs |
+|---|---|---|
+| `Stratosphere.jar` | Paper, Spigot, Purpur | — |
+| `Stratosphere-fabric.jar` | Fabric | Fabric Loader 0.16+ and Fabric API |
+| `Stratosphere-neoforge.jar` | NeoForge | NeoForge 21.1+ |
+
+Place the plugin jar in the server's `plugins` folder, and a mod jar in the `mods` folder. The mods support Minecraft **1.21.1** and **26.x** (26.1 and newer); the shipped jars are checked on 1.21.1, 26.2 and 26.3. Fabric and NeoForge need **Java 21** on 1.21.1 and **Java 25** on 26.x. Every jar is Java 21 bytecode, so it loads on Java 21 as well as 25. On a Minecraft version the mod does not support, it says so in the log and leaves the server alone.
+
+<Callout type="info" title="The panel installs it for you">
+When the panel installs Fabric or NeoForge, it also puts the matching helper mod in the `mods` folder and keeps it up to date. When the version differs from the one the panel ships with, it offers to update it.
+</Callout>
+
+## What the helper enables
+
+- **Tab completion** on the console, from the server's command tree.
+- The **player list**.
+- **Vitals**: health, hunger and experience levels for the player window.
+- **Inventory, ender chest and shulker boxes**.
+- **TPS and MSPT** on the console.
+- **Armor trims** on item icons.
+
+Each of these becomes available as the helper supports it. The helper reports a protocol number on handshake, and the panel only asks for what that number covers:
+
+| Protocol | Adds |
+|---|---|
+| 2 | `perf`: TPS and MSPT |
+| 3 | `vitals` |
+| 4 | The player commands (heal, feed, swap, delete, and so on) |
+| 5 | The ender chest |
+| 6 | Changing health, hunger and levels |
+| 7 | Sending and changing the game mode |
+| 8 | Time and weather |
+| 9 | Shulker boxes |
+
+The format and the full list of events are described in [Console Protocol](/docs/stratosphere/developing/console-protocol).
+
+## Updating the helper
+
+The helper can be **reinstalled from the player list** at any time. Do that when the panel says a newer one exists, or when a feature that needs a newer protocol (such as opening shulker boxes) does nothing. Installing it again replaces the jar on the server.

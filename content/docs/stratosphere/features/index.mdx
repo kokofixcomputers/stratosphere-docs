@@ -1,0 +1,89 @@
+---
+title: Features
+description: Everything the Stratosphere panel offers server owners, from software installs to player inventories.
+---
+
+Stratosphere is a Pterodactyl fork, so everything you know from Pterodactyl is still there: the server console,
+allocations and ports, startups and egg variables, backups, databases, subusers, SFTP, schedules and the client API.
+On top of that it adds a redesigned interface and a set of Minecraft tools that used to need plugins, scripts or a
+second panel.
+
+## Minecraft tooling
+
+<Cards>
+  <Card title="Software" href="/docs/stratosphere/features/software">
+    Install and switch Paper, Purpur, Spigot, Fabric, Quilt, Forge, NeoForge or Velocity from the Versions tab
+  </Card>
+  <Card title="Server properties" href="/docs/stratosphere/features/server-properties">
+    A typed editor for server.properties, the MOTD builder and the Velocity proxy configurator
+  </Card>
+  <Card title="Mods &amp; plugins" href="/docs/stratosphere/features/mods-and-plugins">
+    Browse and install Modrinth and CurseForge content straight onto a server
+  </Card>
+  <Card title="Console" href="/docs/stratosphere/features/console">
+    Color-coded output, copy and search, full-screen mode and tab completion for every command
+  </Card>
+  <Card title="Players" href="/docs/stratosphere/features/players">
+    Operators, whitelist, inventories, ender chests, shulker boxes, armor trims and player actions
+  </Card>
+  <Card title="The helper plugin" href="/docs/stratosphere/features/helper">
+    The companion plugin and mod that powers the player list, tab completion and the console clock
+  </Card>
+  <Card title="Schedules" href="/docs/stratosphere/features/schedules">
+    A cron editor that explains what you typed and shows the next run times
+  </Card>
+</Cards>
+
+## Managing servers
+
+<Cards>
+  <Card title="Dashboard" href="/docs/stratosphere/features/dashboard">
+    Search, filters, sorting, stars and per-user folders for the server list
+  </Card>
+  <Card title="Files" href="/docs/stratosphere/features/files">
+    The file manager and the Monaco editor with tabs, connections to the console and a trash bin
+  </Card>
+  <Card title="Background jobs" href="/docs/stratosphere/features/jobs">
+    Archives, extractions, imports and downloads that run on the node instead of blocking the page
+  </Card>
+  <Card title="Server importer" href="/docs/stratosphere/features/importer">
+    Pull an existing server in over SFTP, FTP or FTPS, with the transfer done by the node
+  </Card>
+  <Card title="Custom domains" href="/docs/stratosphere/features/domains">
+    Let players join through a domain name instead of an IP and a port
+  </Card>
+  <Card title="Auto sleep" href="/docs/stratosphere/features/auto-sleep">
+    Let idle servers sleep and wake them when a player joins
+  </Card>
+  <Card title="CPU burst" href="/docs/stratosphere/features/cpu-burst">
+    Let a server spend saved CPU on a short spike without raising its limit for good
+  </Card>
+  <Card title="Self-service servers" href="/docs/stratosphere/features/self-service">
+    Let users create their own servers with a guided wizard
+  </Card>
+  <Card title="Search" href="/docs/stratosphere/features/search">
+    One search box for servers, pages and actions, with natural-language suggestions
+  </Card>
+  <Card title="Theme" href="/docs/stratosphere/features/theme">
+    Light and dark themes for the whole interface, remembered per device
+  </Card>
+</Cards>
+
+## Setting things up
+
+Some features need a small amount of setup from an administrator:
+- [Self-service servers](/docs/stratosphere/features/self-service) and
+  [custom domains](/docs/stratosphere/features/domains) read `PTERODACTYL_*` settings from the panel's `.env`.
+- [Mods and plugins](/docs/stratosphere/features/mods-and-plugins) need a CurseForge API key before the CurseForge
+  tab appears at all. Modrinth works without any key.
+- [Auto sleep](/docs/stratosphere/features/auto-sleep) gives back the memory of idle servers, and
+  [CPU burst](/docs/stratosphere/features/cpu-burst) is configured per node.
+
+## How it compares
+
+<Cards>
+  <Card title="Comparison" href="/docs/stratosphere/comparison">
+    Every feature on this page next to Pterodactyl, Pelican and Hydrodactyl
+  </Card>
+</Cards>
+
