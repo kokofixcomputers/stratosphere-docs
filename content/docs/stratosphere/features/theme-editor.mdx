@@ -1,0 +1,50 @@
+---
+title: Theme editor
+description: Customise the look and feel of Stratosphere from the admin area.
+---
+
+Admins with permission to change branding get **Settings → Theme editor** in the admin panel. The editor opens `/theme-editor` and shows controls on the left and a live preview of the panel on the right. Nothing changes for anyone until you click **Save theme**. **Discard** reverts back to what is saved, and **Reset to default** restores the built-in theme.
+
+## What you can customise
+
+The theme editor covers branding, colours, shape, layout, motion, the login screen, and the dashboard.
+
+| Section | What you can set |
+|---|---|
+| **Presets** | Pick a starting look. The editor keeps the two light and dark background styles separate. |
+| **Colours** | Accent, secondary, success, danger and warning colours, plus separate page, card, border, text and muted colours for light and dark. |
+| **Shape** | Corner radius (sharp, soft, round, pill, or a custom value in pixels) and button/field rounding. |
+| **Typography** | Font family and root font scale (text size). |
+| **Background** | Quiet gradient, an uploaded picture, or a custom CSS gradient. You can blur and dim a picture background. |
+| **Cards & surfaces** | Glass/see-through cards with blur, lines around cards, and surface materials (frosted, subtle, custom, or off). |
+| **Layout** | Top bars attached or floating, page width, sidebar width, spacing, and a sidebar without its own card. |
+| **Navigation** | Style menus with solid or line highlights, tint the current page, and reorder or hide sidebar items (including adding custom links). |
+| **Dashboard** | Switch servers between a list and a grid, row sizes, what metrics to show and in what order, show/hide address and description, and folder display style (sections, chips, or cards). |
+| **Server banners** | Set a background banner per egg (and per software if there is no egg) that fills the server row. |
+| **Server sidebar** | Hide or reorder items, add your own links (`{id}` and `{uuid}` are replaced with the server's id/uuid), and group them into categories. |
+| **Account & global sidebars** | Reorder, rename, add or remove categories and links for the account sidebar and the sidebar shown outside of servers. |
+| **Console** | Choose whether the console follows the theme or is always dark, its text brightness, and font size. |
+| **Buttons** | Button style (solid, soft, outline, gradient), hover effects (lift, glow, grow, shine) and press effects (squish, sink). |
+| **Motion** | Enable hover animations for cards and rows, set animation speed, page transition style (fade, slide up, or none), and the pulse on running servers. Respects the device's "reduce motion" setting. |
+| **Login page** | Pick a layout (card, brand shell, split, showcase), choose a background (gradient, picture, scanning light, squares, egg banners), position the form left or right, and customise the title/tagline/highlights. |
+| **Power dock** | Float the power buttons (start, stop, restart, kill) as a dock at the bottom of every server page. The existing buttons in the header/sidebar remain regardless. |
+| **Branding** | Upload a logo and favicon, add custom links to the bars, write dashboard announcements, and set search/sharing metadata (page title, description, share image, robots, browser theme colour, app name/short name). |
+
+## How the theme editor works
+
+1. Every change you make in the editor is sent live to the preview via `postMessage`, so you see updates without reloading or saving.
+2. The editor generates a small block of CSS custom properties (`--*`) that define your theme. This is stored by the panel alongside the theme config.
+3. Those variables are printed in the page `<head>` on every panel page, so the entire interface reads them. Only safe variables are allowed — scripts and arbitrary CSS are not.
+4. The preview frame loads the real panel with `?theme-preview=1`. Inside the preview, the draft theme replaces the saved one temporarily; nothing is ever saved from inside the frame. Messages are only accepted from the same origin.
+
+## Uploading images
+
+Backgrounds, banners, logos, favicons and share images go to `public/branding/`. Uploading uses `/api/client/theme` and requires the `settings.branding.update` permission. Changes to branding are saved separately from the theme itself.
+
+## Tips
+
+- **Start from a preset** to get close to what you want, then tweak colours and shapes.
+- **Test light and dark** in the preview — many settings (backgrounds, gradients and colours) have separate light and dark values.
+- **Folders and status**: the folder view can be switched between sections, chips, or cards in the Dashboard section. Chips and cards show a green/amber/red dot based on what is running.
+- **Server banners**: banners cover the server row. The editor lets you pick an egg/software from the list and upload an image for it.
+- **Preview any page**: the frame can navigate around the real panel while previewing, so you can check the console, server pages, dashboard, and even the login screen.

@@ -18,6 +18,7 @@
     "cpu-burst",
     "self-service",
     "search",
-    "theme"
+    "theme",
+    "theme-editor"
   ]
 }
