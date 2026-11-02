@@ -1,9 +1,9 @@
 ---
 title: Mods & Plugins
-description: Browse and install mods, plugins, data packs, resource packs and worlds from Modrinth and CurseForge.
+description: Browse and install mods, plugins, data packs, resource packs and worlds from Modrinth, Hangar and CurseForge.
 ---
 
-The server's content page is where you browse and install add-ons. Two sources are available: **Modrinth** and, when it is set up, **CurseForge**.
+The server's content page is where you browse and install add-ons. Three sources are available: **Modrinth**, **Hangar**, and, when it is set up, **CurseForge**. The switch at the top of the sidebar chooses the source.
 
 ## Modrinth
 
@@ -17,6 +17,18 @@ From Modrinth you can browse and install:
 - and modpacks.
 
 A project page shows its description, screenshots and versions with changelogs. Install puts the file in the right place on the server for you.
+
+## Hangar
+
+[Hangar](https://hangar.papermc.io) is the plugin repository of PaperMC. It has **plugins** for Paper (and what is built on it), Velocity and Waterfall, and nothing else, so the other kinds are not offered while Hangar is chosen. It needs no key and no setup: the browser asks `https://hangar.papermc.io/api/v1` directly, like it asks Modrinth, so nothing goes through the panel and nothing is stored.
+
+Everything the content page does works with it: searching (words, category, Minecraft version, platform, sorting by popularity, downloads, stars, recently updated and newest), the page of a plugin, versions with changelogs, installing, dependencies that are on Hangar, installed plugins, updates and uninstalling. Ids from Hangar look like `hg:ViaVersion` (a version: `hg:ViaVersion@5.12.0`), so they never get mixed up with ids of other sites.
+
+- **Hosted elsewhere.** A plugin author may keep the file on GitHub and only list the version on Hangar (EssentialsX does). Those versions show a **Download page** link instead of an Install button, like CurseForge files that may not be shared.
+- **Snapshot builds.** Many plugins publish every build in a Snapshot channel. What is installed or offered as an update is the newest **release**. A snapshot is only installed when you choose that version on the Versions tab.
+- **Which servers a plugin fits.** A plugin for Hangar's Paper platform is offered to Paper, Purpur, Folia, Spigot and Bukkit servers. Velocity plugins go to Velocity, Waterfall plugins to Waterfall and BungeeCord.
+- **One category at a time.** Hangar filters on a single category.
+- **No file hashes.** Hangar cannot say which project a jar belongs to from the file alone, so jars put on a server by hand are not recognised as Hangar plugins. Plugins installed through the panel are, because they are written down in `stratosphere.json`.
 
 ## CurseForge
 
@@ -42,5 +54,9 @@ Ids from CurseForge start with `cf:` (`cf:394468`) so they never mix with Modrin
 ## Limits
 
 A search shows at most **10,000 results**, which is as far as CurseForge answers.
+
+## How CurseForge works inside the panel
+
+CurseForge does not let a browser ask it things, and the key has to stay secret, so the browser asks the panel (`/api/client/curseforge/...`) and the panel asks CurseForge. Only a fixed set of reads is possible and every parameter is checked. Answers are cached for a few minutes (lists of categories and versions for six hours), so many people looking at the same mod use up one request of the key. Nothing is ever written at CurseForge. In the interface, `resources/scripts/lib/curseforge.ts` turns what CurseForge sends into the shapes the pages already use for Modrinth, and the address says which site is shown (`?s=curseforge`).
 
 Every download is handled as a background **job** on the node, so you can leave the page while it runs. See [Jobs](/docs/stratosphere/features/jobs).

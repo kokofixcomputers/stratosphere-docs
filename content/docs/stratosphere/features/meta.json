@@ -17,6 +17,9 @@
     "auto-sleep",
     "cpu-burst",
     "self-service",
+    "server-splitting",
+    "server-export",
+    "privacy",
     "search",
     "theme",
     "theme-editor"

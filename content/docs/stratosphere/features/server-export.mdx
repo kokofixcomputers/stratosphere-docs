@@ -1,0 +1,33 @@
+---
+title: Moving a server to another panel
+description: Export a server with its files and settings, and import it on another panel.
+---
+
+A server can be moved to another Stratosphere panel with its settings, schedules and files. It needs no special Wings: it uses the usual file write, compress, upload and decompress calls.
+
+## Export
+
+On the server's **Settings** page (owner and admins), use **Move to another panel**:
+
+- **Export with files** writes `stratserver.json` into the server, compresses everything into `<name>.stratserver.tar.gz` with the normal archive, downloads it, and deletes the json again. The archive stays in the server's files.
+- **Settings only** downloads just the json. **Admin > Servers > the server > Manage** has the same button.
+
+`stratserver.json` holds the settings, the owner's email, the limits, the egg uuid and name, the image, the startup command, the variables, and the schedules with their tasks.
+
+## Import
+
+**Admin > Servers > Create new** has an **Import a Server** box. It takes the `.json` or the `.tar.gz`. For the archive the browser reads through the stream and keeps only `stratserver.json`.
+
+The form is filled in (the egg by uuid, then by name; the owner by email), and the admin picks the node and the allocation. The schedules are made right after the server. A cron that does not parse, or an action that is not power, command or backup, is skipped.
+
+## Files
+
+Once the new server has installed, **Settings > Import files from an export** uploads the same `.tar.gz` and extracts it in the root (files with the same name are replaced). It then deletes the archive and `stratserver.json`.
+
+## Not in the export
+
+Subusers, the contents of databases, and backups are not exported.
+
+## For developers
+
+The code is `Services/Servers/ServerExportService.php`, `ServerImportService.php`, `Api/Client/Servers/ExportController.php`, `Admin/Servers/ServerExportController.php`, `components/server/settings/MoveServerBox.tsx`, and `lib/stratserverFile.ts`. Tests: `tests/Integration/Servers/ServerExportTest.php`.

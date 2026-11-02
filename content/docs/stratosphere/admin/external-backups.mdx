@@ -1,0 +1,55 @@
+---
+title: Backups outside the node
+description: Copy backups to S3, WebDAV or a folder, decide how much is kept, and restore from the copies.
+---
+
+By default a backup stays on the node of its server. **Admin > Settings > Backups** adds places where copies are kept as well:
+
+- **S3**: Amazon, Backblaze B2, Wasabi, MinIO, Cloudflare R2 and anything else that speaks S3.
+- **WebDAV**: Nextcloud, ownCloud, a NAS.
+- **A folder** on the machine of the panel: a second disk or a mounted share.
+
+You can add any number of destinations.
+
+## How it works
+
+1. The node makes the backup like it always did (the local backup, or the S3 adapter set in `.env`).
+2. When it is complete, the panel copies it to every destination that is on and takes every backup. The panel reads the file from the node, the same link a download uses, and streams it to the destination, so nothing is held in memory.
+3. The copy is a queued job (`CopyBackupToDestination`). The **queue worker has to run**, and the panel machine carries the traffic.
+4. A copy shows as *copying*, *stored* or *failed* (with the reason) on the Backups tab of the server and on the destination.
+
+Each destination also has:
+
+- **Remove the file from the node once it is stored here.** This frees the disk of the node: the destination is then the only place with the backup, which shows as *Only in copies*. Only for backups made on the node itself.
+- **Test it**, which writes a small file, reads it back and deletes it, before or after saving.
+- **Copy the existing backups**, which copies what was made before the destination was added.
+
+## How much is kept
+
+Each destination has limits, applied for each server:
+
+| Limit | Meaning |
+|---|---|
+| Newest copies | Keep the newest N copies |
+| Days | No copies older than N days |
+| GB together | No more than N GB in total |
+
+Empty means no limit. Whatever goes over a limit is deleted from the destination, oldest first, after every copy and every hour (`p:backup:prune-external`), or at once with **Apply the limits now**. A **locked backup is never deleted**. A backup that is only in copies and loses its last copy is removed from the panel too.
+
+The backup limit of a server (how many backups it may have) is unchanged. So is deleting: deleting a backup deletes its copies in every destination.
+
+## Getting it back
+
+- **Download.** With several places to read from, the menu gives a choice: the node, or each destination. S3 gives a direct, short-lived link. WebDAV and folders go through the panel with a signed link (`/backup-copies/{id}/download`, valid for 15 minutes).
+- **Restore.** The same choice. A copy is restored by giving Wings a download link, the way S3 backups always were, so Wings has to be able to reach the panel (Wings refuses links to private addresses). When the node does not have the file any more, the restore uses a copy by itself.
+
+## Good to know
+
+- Keys and passwords are stored encrypted in the database and never shown again. Leaving them empty when editing keeps them.
+- A destination cannot be deleted while it holds the only copy of a backup. Deleting one deletes its copies, not the backups on the nodes.
+- Nothing changes for the S3 adapter of `.env` (`APP_BACKUP_DRIVER=s3`): it still makes the backup in S3 itself. The destinations here are copies.
+- Roles: `settings.backups.view` and `settings.backups.update`.
+
+<Callout type="warn">
+  Tested with a folder and with mocked WebDAV answers. S3 and a real WebDAV server have not been tried against live services.
+</Callout>

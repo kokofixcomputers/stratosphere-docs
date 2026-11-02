@@ -10,7 +10,7 @@ The panel is a Laravel application with a React and TypeScript frontend built by
 - **Node.js 22 or newer** — the `engines` field of `package.json` requires it.
 - **PHP 8.2 or 8.3** — the panel's `composer.json`.
 - **Yarn 1.x** — the frontend dependencies.
-- **Go 1.21 or newer** — only if you work on the `mc-router` or `panel-edge` tools.
+- **Go 1.21 or newer** — only if you work on `stratosphere-net` (the router and the edge).
 
 ## Install and preview
 
@@ -62,7 +62,7 @@ Until you have built the assets at least once, the panel can return a 500 error 
 - **`resources/scripts/lib/`** — plain TypeScript logic and helpers (`theme.ts`, `palette.ts`, `nlu.ts`, `commandTree.ts`, and so on), each with its tests alongside.
 - **`resources/scripts/assets/css/palette.js`** — the colours of the light and dark themes.
 
-The admin area (`/admin`) is rendered from Blade with AdminLTE, not React, and has no dark theme yet.
+The admin area (`/admin`) is part of the same React app and follows the theme like the rest of the panel. See [The admin area](/docs/stratosphere/developing/admin-area) for how its pages, API and permissions fit together.
 
 ## Building the theme
 

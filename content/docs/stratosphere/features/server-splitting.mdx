@@ -1,0 +1,33 @@
+---
+title: Splitting a server
+description: Split a server into several servers that share its memory, disk space and CPU, and move resources between them.
+---
+
+The owner of a server can split it into several servers that share its memory, disk space and CPU. Open **Split** under **More** in the server menu.
+
+## How it works
+
+- Every part is a server of its own, on the same node, with its own port, files, console and power buttons. It appears on the dashboard like any server, with a pill that says it is split from another one.
+- A new part is made from the egg the create wizard uses (the Java egg). You pick the **software and version** in a window when you split it off, and it is installed on the part.
+- The parts share one total. The first server keeps what the others do not have. Moving a slider on a part takes from (or gives to) the first server, so moving resources from one part to another means lowering one and raising the other. **Save** applies it. The new limits are sent to Wings straight away, and a running server picks them up on its next start where Wings needs that.
+- Open the Split page of any part to manage the whole group.
+
+## Limits
+
+- A part gets at least 512 MB of memory, 1 GB of disk and 50% CPU, and the first server keeps at least that too.
+- A server can have up to nine parts.
+- A part is not split again.
+- Only a server with limits can be split. 0 (no limit) on memory, disk or CPU leaves nothing to divide.
+- Deleting a part gives its share back to the first server. Deleting the first server frees what it had, and the parts stay as servers of their own.
+
+## Resource pools
+
+The total does not change when a server is split, so the owner's [resource pool](/docs/stratosphere/admin/resource-pools) is not used up, except that each part needs a port of its own, which is an allocation of the pool. A part has no backups and no databases. An admin can raise the allocation and backup limits of a part if it needs more.
+
+## Permissions
+
+The owner of the server can split it, and so can admins who may update servers.
+
+## API
+
+`GET`, `POST` and `PUT /api/client/servers/{server}/split`, and `DELETE /api/client/servers/{server}/split/{part}`. The code is `app/Services/Servers/ServerSplitService.php` and `resources/scripts/components/server/split`.

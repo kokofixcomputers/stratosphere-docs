@@ -1,0 +1,45 @@
+---
+title: Private network
+description: Let the servers of one owner reach each other on private addresses, on one node and between nodes.
+---
+
+Servers can reach each other on private addresses, on one node and between nodes, without the traffic going over the public internet. It is **off by default**. **Admin > Settings > Private network** turns it on. There is nothing else to set up by hand: no keys, no addresses, no routes.
+
+## Turn it on
+
+1. Switch it on. A range is made for you (like `10.142.0.0/16`, one that no port of a node is inside). Leave it or change it. It has to be a private range (`10.x`, `172.16-31.x`, `192.168.x` or `100.64-127.x`) and big enough: every node gets a `/24` slice of it.
+2. Press **Save**. The panel gives every node that takes part a slice and tells the nodes. Within a minute each node has set itself up and says so. The list shows *Working*, *Problem* (hover for why) or *Waiting for the node*.
+3. The owner of a server presses **Join** on the Network tab and gets an address from the slice of the node, like `10.142.3.2`. The servers of the same owner that joined reach each other on those addresses, with the port the server listens on. For a Velocity proxy, use these addresses in the servers section of `velocity.toml`.
+
+Every node takes part until you switch it off in the list. A node can also have its own UDP port for the tunnel (51820 by default).
+
+## What you need
+
+- The Stratosphere Wings of this release on the nodes, root, and iptables (Docker has them).
+- For **more than one node**, a kernel with WireGuard (built in since Linux 5.6). The nodes must reach each other on the UDP port (51820 by default) at their FQDN. The node opens the port in iptables itself. A firewall of a cloud provider has to be told.
+- With a **single node**, nothing but the Docker network and the rules is made: servers of the same owner on that node reach each other on their private addresses, with no tunnel and no WireGuard. The tunnel is made when a second node takes part.
+
+## Who can reach whom
+
+A server is reached by the other servers of **its owner** that joined, on every node, and by nobody else. The servers of other people cannot reach yours, even on the same node. Servers that did not join are not on the private network at all.
+
+## How it works
+
+- The panel keeps the range, the slice of every node and the address of every server that joined. It tells a node what it should have (`GET /api/remote/private-network`, and `POST /api/private-network/sync` when something changes).
+- A node makes its own WireGuard key (`<root_directory>/.privnet/wg.key`) and reports the public key to the panel, which gives it to the other nodes. These are all the keys there are, and nobody handles them.
+- The node makes the interface `strat0`, a tunnel to every other node (allowed addresses: its slice) and a route for each slice into the tunnel. It makes the Docker network `stratosphere_private` (bridge `strat_priv0`) with the whole range as its subnet and its slice as what it gives out, with no NAT. The containers of the servers that joined are attached to it with their address.
+- Rules in the chain `STRAT-PRIVATE`, at the top of `DOCKER-USER`: connections that are open continue, a server is reached by the other servers of its owner, and the rest of the private range is dropped.
+- The node looks at what it should have every minute, and attaches containers every few seconds, because a container is made again at each start.
+
+## Good to know
+
+- Changing the range gives every node a new slice and every server a new address. The nodes put it right by themselves.
+- Taking a node out, or turning the whole network off, removes the tunnel, the network and the rules from it. Servers stay joined and come back when it is turned on again.
+- A server that is transferred to another node gets an address from the slice of the new node.
+- Names do not resolve between nodes. Use the addresses.
+
+<Callout type="warn">
+  Tested: the panel (PHP tests), and the logic of the node with fakes (which containers are attached, the rules for who reaches whom, a new range, failures). **Not tried on real nodes:** WireGuard, the Docker network, iptables and routing between two machines.
+</Callout>
+
+Roles: `settings.private.view` and `settings.private.update`, and `allocation.update` on the server to join or leave.

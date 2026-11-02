@@ -42,7 +42,7 @@ When the router cannot reach a server and the panel says it is asleep, the route
 - A server that its owner stopped by hand is never woken; only one that auto sleep stopped is.
 - One wake is sent per server every 30 seconds, however many players try.
 
-The messages can be changed with `SLEEPING_MOTD` and `WAKING_MOTD` in `/etc/mc-router.env`. The router has to be updated for waking to work; `sudo php artisan p:router:install` again installs the new one. See [Router](/docs/stratosphere/developing/router).
+The messages can be changed with `SLEEPING_MOTD` and `WAKING_MOTD` in `/etc/stratosphere-net.env`. The router has to be updated for waking to work; `sudo php artisan p:router:install` again installs the new one. See [stratosphere-net](/docs/stratosphere/developing/router).
 
 The sleep and the wake are in the activity log of the server.
 

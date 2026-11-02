@@ -1,4 +1,4 @@
 {
   "title": "Administration",
-  "pages": ["index", "roles", "settings", "authentication", "domains", "certificates", "trash", "extensions", "updates"]
+  "pages": ["index", "roles", "settings", "authentication", "domains", "certificates", "trash", "resource-pools", "external-backups", "tunnels", "private-network", "extensions", "updates"]
 }

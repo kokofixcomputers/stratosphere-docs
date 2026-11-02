@@ -35,10 +35,20 @@ Every option comes from `.env`:
 | `PTERODACTYL_SELF_SERVICE_ALLOCATIONS` | `4` | Allocations a server may have in total (it starts with two) |
 | `PTERODACTYL_SELF_SERVICE_MEMORY` / `_DISK` / `_CPU` | `2048` / `10240` / `200` | Default specs |
 | `PTERODACTYL_SELF_SERVICE_MAX_MEMORY` / `_MAX_DISK` / `_MAX_CPU` | `8192` / `51200` / `400` | Upper limit of the spec sliders |
+| `PTERODACTYL_SELF_SERVICE_BACKUPS` / `_DATABASES` | `2` / `1` | Backups and databases a new server gets |
+| `PTERODACTYL_SELF_SERVICE_MAX_BACKUPS` / `_MAX_DATABASES` | `5` / `3` | Upper limit of the Advanced sliders (without resource pools) |
+
+## Resource pools
+
+Instead of a number of servers, an admin can give each person an amount of memory, disk, CPU, allocations, backups and databases to spend. The wizard then shows what would be left after the server. See [Resource pools](/docs/stratosphere/admin/resource-pools).
+
+## Advanced options
+
+The review step has an **Advanced** dropdown with **Allocations**, **Backups** and **Databases** sliders, up to what the panel allows (`PTERODACTYL_SELF_SERVICE_ALLOCATIONS`, `PTERODACTYL_SELF_SERVICE_MAX_BACKUPS` and `PTERODACTYL_SELF_SERVICE_MAX_DATABASES`).
 
 ## Admins are never limited
 
-Root administrators are never limited by `PTERODACTYL_SELF_SERVICE_MAX_SERVERS`. A user who may create servers gets no server limit at all, so admins can always make one for themselves.
+Root administrators are never limited by `PTERODACTYL_SELF_SERVICE_MAX_SERVERS`. A user who may create servers gets no server limit at all, so admins can always make one for themselves. The Advanced sliders go up to 20 allocations, 100 backups and 20 databases for them.
 
 ## API
 

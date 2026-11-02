@@ -1,0 +1,48 @@
+---
+title: Resource pools
+description: Give people an amount of memory, disk, CPU, ports, backups and databases to spend on servers instead of a number of servers.
+---
+
+By default a person can create a limited number of servers for themselves (`PTERODACTYL_SELF_SERVICE_MAX_SERVERS`). With **resource pools** the limit is an amount to spend instead: so much memory, disk space, CPU, allocations, backups and databases **in total**, and as many servers as fit in it.
+
+It is **off by default**. Turn it on under **Admin > Settings > Resource pools**.
+
+## Settings
+
+- The switch, and what a person gets by default: memory (MB), disk (MB), CPU (percent), allocations, backups and databases. The defaults are 4096 MB, 10240 MB, 200%, 5 allocations, 5 backups and 2 databases.
+- A person's **own pool** is on their page in **Users** (the Resource pool box). A field left empty means the default of the panel, so changing the default changes what everybody without a pool of their own gets.
+
+## What people see
+
+The **Create new server** wizard keeps its sliders for memory, disk and CPU and has an **Advanced** dropdown with **Allocations**, **Backups** and **Databases** sliders. Backups and databases are the backup and database limits of the server.
+
+- No slider offers more than is left in the pool.
+- The review step shows what would be left after the server, like `1 GiB of 4 GiB`, `50% of 200%` and `1 of 5`.
+- When nothing is left the page says so and tells them to delete a server to get its share back.
+- Ports added to a server later on the Network tab come out of the pool too.
+
+The **Advanced** dropdown is there without pools too. People can pick up to what the panel allows (`PTERODACTYL_SELF_SERVICE_ALLOCATIONS`, `PTERODACTYL_SELF_SERVICE_MAX_BACKUPS` and `PTERODACTYL_SELF_SERVICE_MAX_DATABASES`), and admins who may create servers can pick up to 20 allocations, 100 backups and 20 databases.
+
+## Account > Resources
+
+Every account has a **Resources** page in the account sidebar. It shows the pool with what is used and what is left of each part, and a table of the servers the account owns with their share. Without pools (or for admins who are not limited) it shows only what the servers use.
+
+## How it is counted
+
+- What a person has used is counted from the servers they **own**, wherever they were made: the memory, disk and CPU of each server, and the allocations assigned to it. There is no second ledger: deleting a server gives its share back.
+- Backups and databases are the limits of the servers added up. A server made by an admin without a limit counts as none.
+- A server needs at least 512 MB of memory, 1024 MB of disk, 50% CPU and one allocation. It can have no backups and no databases.
+- With a pool, a server can have as many allocations as the owner's pool allows. What is really left decides.
+- People who may create servers in the admin area (root admins, and roles with `servers.create`) are never limited by a pool.
+- Somebody who already has more than the pool allows keeps their servers. They just cannot make more until they are under it.
+- The role permission `self.servers.create` still applies: deny it to stop somebody from creating servers at all. See [Roles](/docs/stratosphere/admin/roles).
+
+## Permissions
+
+`settings.pools.view` and `settings.pools.update` for the settings page, and `users.update` for the pool of a person.
+
+## For developers
+
+The arithmetic is in `app/Services/Pools/ResourcePool.php` (`limits`, `used`, `remaining`, `check`, `fit`, `canCreate`). The defaults are the config keys `pterodactyl.pools.*`, also set from the environment (`PTERODACTYL_POOLS_ENABLED`, `_MEMORY`, `_DISK`, `_CPU`, `_ALLOCATIONS`, `_BACKUPS`, `_DATABASES`). A person's own pool is the columns `pool_memory`, `pool_disk`, `pool_cpu`, `pool_allocations`, `pool_backups` and `pool_databases` of `users` (null means the default).
+
+The wizard is `resources/scripts/components/dashboard/CreateServerContainer.tsx` and the "left after" arithmetic is `resources/scripts/lib/pool.ts`. The account page is fed by `GET /api/client/account/resources`.

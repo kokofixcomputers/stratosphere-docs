@@ -1,0 +1,28 @@
+---
+title: Hide sensitive information
+description: A switch for streaming and screenshots that blurs addresses, emails and IP addresses.
+---
+
+Account settings has a switch, **Hide sensitive information**, for streaming, screen sharing and screenshots. It is off by default. While it is on, what could point at a person or a server is blurred. A small crossed-out eye in the top bar says so, and a click on it turns the switch off.
+
+The real text is still in the page: it is covered by a blur that clears while the pointer or keyboard focus is on it. Text that cannot be blurred, such as console lines and tooltips, shows dots like `••••.••••.••••:••••`.
+
+## What is hidden
+
+- **IP addresses and addresses of servers.** The server list, the connection address on the console page and in the sidebar, the Network page, the SFTP address and username, database endpoints, hosts and usernames, and the addresses on the proxy page.
+- **Domains** of a server and the DNS records shown for them.
+- **Email addresses.** Your own (the account page and menu, and the email field is blurred), the ones of subusers, and the actor of an entry of the activity log.
+- **The activity log.** The IP address of every entry, and addresses and emails inside the details of an entry, including the metadata window.
+- **The console.** IP addresses and email addresses in the lines of the log, such as where a player logged in from. Lines already on the screen are drawn again when the switch is turned on or off.
+- The new addresses of [tunnels](/docs/stratosphere/admin/tunnels) and the [private network](/docs/stratosphere/admin/private-network) are hidden the same way.
+
+## Good to know
+
+- It only changes what is shown. **Copying a value (a click on an address) still copies the real one**, so something can be pasted off camera. Nothing is changed on the panel.
+- The setting belongs to the browser (local storage), not to the account, so a streaming computer can have it on and other devices not. It follows between tabs of the same browser.
+- Names of players and servers are shown as they are, they are not addresses. The field where an email address or a server address is typed in, and passwords that are revealed on purpose, are not hidden.
+- The search of the dashboard still finds a server by its address when you type it. The Tools tab, the player inventory and the files are not changed.
+
+## For developers
+
+The setting and how a value is turned into dots are in `lib/privacy.ts`, `components/elements/Sensitive.tsx` draws text and the blur of a field, and `lib/privacy.spec.ts` tests it. Use `Sensitive` for any new address or email you show.

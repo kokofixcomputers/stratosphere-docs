@@ -1,13 +1,13 @@
 ---
 title: Developing Stratosphere
-description: How to work on the panel, its docs, the Wings fork, the Go tools, the helper plugin and mod, and extensions.
+description: How to work on the panel, its docs, the Wings fork, the Go program, the helper plugin and mod, and extensions.
 ---
 
-Stratosphere is more than one program. The panel is a Laravel application with a React frontend, the daemon on the nodes is a fork of Wings, two small Go tools handle domains and HTTPS, and a helper plugin/mod talks to the panel over the console. This section shows where each part lives and how to work on it.
+Stratosphere is more than one program. The panel is a Laravel application with a React frontend, the daemon on the nodes is a fork of Wings, one small Go program handles domains and HTTPS, and a helper plugin/mod talks to the panel over the console. This section shows where each part lives and how to work on it.
 
 ## The repositories
 
-- **Panel** — [github.com/kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel): the PHP/Laravel panel, the React/TypeScript frontend, the Minecraft tools, the extensions and the Go tools.
+- **Panel** — [github.com/kokofixcomputers/StratPanel](https://github.com/kokofixcomputers/StratPanel): the PHP/Laravel panel, the React/TypeScript frontend, the Minecraft tools, the extensions and the Go program.
 - **Wings fork** — [github.com/kokofixcomputers/stratwings](https://github.com/kokofixcomputers/stratwings): the Stratosphere fork of the Wings daemon that runs the game servers on a node.
 
 ## The panel
@@ -28,11 +28,11 @@ Stratosphere uses its own fork of Wings. The panel updates it over the network w
 - The panel's update flow is described under [Nodes](/docs/stratosphere/getting-started/nodes).
 - Giving a node a certificate is described under [Certificates](/docs/stratosphere/admin/certificates).
 
-## The Go tools
+## The Go program
 
-`mc-router` and `panel-edge` are small Go programs. Build one with `go build` and run its tests with `go test ./...` (Go 1.21 or newer required).
+`stratosphere-net` is one small Go program (in `tools/stratnet`) with two parts, the router and the edge. Build it with `go build` and run its tests with `go test ./...` (Go 1.21 or newer required).
 
-Both are covered on the [Router and edge](/docs/stratosphere/developing/router) page.
+Both parts are covered on the [stratosphere-net](/docs/stratosphere/developing/router) page.
 
 ## The helper plugin and mod
 
@@ -65,8 +65,8 @@ See [Extensions](/docs/stratosphere/developing/extensions) for the manifest, hoo
   <Card title="Natural-language search" href="/docs/stratosphere/developing/nlu">
     The classifier behind the search box.
   </Card>
-  <Card title="Router and edge" href="/docs/stratosphere/developing/router">
-    The mc-router and panel-edge Go tools.
+  <Card title="stratosphere-net" href="/docs/stratosphere/developing/router">
+    The stratosphere-net Go program: the router and the edge.
   </Card>
   <Card title="StratPanel on GitHub" href="https://github.com/kokofixcomputers/StratPanel">
     Source of the panel, the frontend and the tools.

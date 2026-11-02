@@ -14,10 +14,10 @@ The sidebar only shows the pages a person can open, and they land on the first p
 
 ## Where the Stratosphere pages live
 
-Most Stratosphere-specific admin work is under **Admin > Settings**, which holds the CurseForge, Authentication, Providers, Domains, Certificates and Trash tabs, and on the **Roles**, **Extensions** and **Updates** pages of the sidebar.
+Most Stratosphere-specific admin work is under **Admin > Settings**, which holds the CurseForge, Authentication, Providers, Domains, Certificates, Backups, Tunnels, Private network, Resource pools and Trash tabs, and on the **Roles**, **Extensions** and **Updates** pages of the sidebar.
 
 <Callout type="info">
-  The admin area is built with **AdminLTE** and has no dark theme yet, unlike the rest of the panel. See [Theme](/docs/stratosphere/features/theme).
+  The admin area is part of the same app as the rest of the panel: the same components, the same sidebar style, and the light and dark [theme](/docs/stratosphere/features/theme).
 </Callout>
 
 ## Admin pages
@@ -40,6 +40,18 @@ Most Stratosphere-specific admin work is under **Admin > Settings**, which holds
   </Card>
   <Card title="Trash" href="/docs/stratosphere/admin/trash">
     Keep deleted server files and schedules for a set number of days.
+  </Card>
+  <Card title="Resource pools" href="/docs/stratosphere/admin/resource-pools">
+    Give people an amount of memory, disk, CPU, ports, backups and databases to spend instead of a number of servers.
+  </Card>
+  <Card title="Backups outside the node" href="/docs/stratosphere/admin/external-backups">
+    Copy backups to S3, WebDAV or a folder, and decide how much is kept.
+  </Card>
+  <Card title="Tunnels" href="/docs/stratosphere/admin/tunnels">
+    Let servers be played without port forwarding, through ngrok, Pinggy, playit.gg or your own QuickExpose relay.
+  </Card>
+  <Card title="Private network" href="/docs/stratosphere/admin/private-network">
+    Servers of one owner reach each other on private addresses, between nodes too.
   </Card>
   <Card title="Extensions" href="/docs/stratosphere/admin/extensions">
     Install and manage `stratext` extensions and their settings.

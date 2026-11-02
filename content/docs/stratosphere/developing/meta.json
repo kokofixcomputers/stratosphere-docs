@@ -1,4 +1,14 @@
 {
   "title": "Developing",
-  "pages": ["index", "panel", "extensions", "commands-json", "console-protocol", "nlu", "router"]
+  "pages": [
+    "index",
+    "panel",
+    "admin-area",
+    "extensions",
+    "commands-json",
+    "console-protocol",
+    "theme-editor",
+    "nlu",
+    "router"
+  ]
 }

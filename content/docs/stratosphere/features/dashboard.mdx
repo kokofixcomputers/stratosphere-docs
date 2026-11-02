@@ -39,6 +39,10 @@ Admins also see **Others' servers**. That list stays paged and is searched by th
 
 Your own servers load 100 at a time, up to 1000.
 
+## Player counts
+
+The player counts on the server list come from the servers themselves. The panel sends each running server the "server list ping" that every Minecraft client sends, so nothing needs to be installed on the server. **The panel has to be able to reach the game port**: the address of the default allocation, or the node when that is `0.0.0.0`. A server that does not answer simply shows no number. Answers are kept for 15 seconds, and at most 100 servers are asked per request (`GET /api/client/dashboard/players`).
+
 ## API
 
 Client routes. `GET /api/client/dashboard` returns the folders and starred servers:

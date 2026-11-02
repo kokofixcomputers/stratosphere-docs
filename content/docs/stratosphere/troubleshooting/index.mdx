@@ -75,7 +75,7 @@ nothing that could notice a player. Two more things to check:
 - A server that its owner stopped by hand is never woken automatically; only one that auto sleep stopped is.
 
 If the router is too old, waking does not work: run `sudo php artisan p:router:install` again to install the
-current one. The wording players see can be changed with `SLEEPING_MOTD` and `WAKING_MOTD` in `/etc/mc-router.env`.
+current one. The wording players see can be changed with `SLEEPING_MOTD` and `WAKING_MOTD` in `/etc/stratosphere-net.env`.
 See [Auto sleep](/docs/stratosphere/features/auto-sleep).
 
 ## The player window is empty, or tab completion does not work
@@ -93,8 +93,8 @@ an old helper answers fewer things (see the protocol levels on the
 
 ## https does not work on the panel
 
-- Is panel-edge running? `sudo bash tools/panel-edge/install.sh` installs it; the certificate page says whether
-  panel-edge is connected. See [Certificates](/docs/stratosphere/admin/certificates).
+- Is the edge running? `sudo bash tools/stratnet/install.sh edge` installs it (`sudo systemctl status stratosphere-net`); the certificate
+  page says whether the edge is connected. See [Certificates](/docs/stratosphere/admin/certificates).
 - Behind a reverse proxy the panel has to know it, or it builds `http://` links: set `TRUSTED_PROXIES` (the
   installer does this).
 - A certificate that was rejected is usually a chain in the wrong order, a key that does not match, or an expired
