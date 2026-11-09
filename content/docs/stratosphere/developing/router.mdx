@@ -57,6 +57,8 @@ An extension can replace the wording per server: it adds a `notice` with a label
 
 A server whose owner turned on [auto sleep](/docs/stratosphere/features/auto-sleep) is stopped by the panel when nobody has been on for a while. The router then shows "asleep, join to wake it up" in the server list, and when a player tries to **join** it asks the panel to start the server and tells the player to come back in a minute. Only joining wakes it (looking at the server list does not), and a server its owner stopped by hand is never started. Waking needs the server to have a domain on the router, because a stopped server has nothing else that could notice the player. Change the wording with `SLEEPING_MOTD` and `WAKING_MOTD`.
 
+When the panel has [linking of Minecraft accounts](/docs/stratosphere/admin/minecraft-accounts) on, an address that leads to no server is answered with the Mojang login and a code instead of "no server" (`LINK_MOTD` is the server list text, `MOJANG_SESSION_URL` replaces the session server, for tests).
+
 Java Edition only: Bedrock uses UDP and is not routed.
 
 ## The edge

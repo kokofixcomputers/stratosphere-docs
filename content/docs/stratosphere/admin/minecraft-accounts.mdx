@@ -1,0 +1,23 @@
+---
+title: Minecraft accounts
+description: Let people link their Minecraft account, through the router.
+---
+
+Under **Settings > Minecraft accounts** you turn on [linking of Minecraft accounts](/docs/stratosphere/features/minecraft-accounts). It is off by default.
+
+## What you need
+
+- The router of `stratosphere-net` (see [the router](/docs/stratosphere/developing/router)) in this release, running on the machine players reach on port 25565, with the panel address and `ROUTER_TOKEN` set. That machine has to reach Mojang (`sessionserver.mojang.com`).
+- An **address to join**: any name that leads to the machine of the router and is not the domain of a server, for example an A record `link.example.com`. Enter it on the settings page so the Account page can tell people where to join. Nothing else has to be set up for it.
+
+## What the player sees
+
+An address the router does not know is not answered with "no server" any more. In the server list it says to join to link, and joining shows a screen with the code, how long it is valid and where to enter it. A player whose account is linked already is told which account it is linked to. Change the server list text with `LINK_MOTD` in `/etc/stratosphere-net.env`.
+
+## Details
+
+- A code is 6 digits, works for 15 minutes, once, and only for the account that got it. Joining again before it runs out shows the same code.
+- The router lets one address try 12 times a minute and checks at most 64 players at the same time.
+- The avatar comes from `mc-heads.net`. Set `MINECRAFT_AVATAR_URL` in the `.env` of the panel (with `{uuid}` in it, for example `https://crafatar.com/avatars/{uuid}?size=128&overlay`) to use another service.
+- The settings page shows how many accounts are linked and how many codes are waiting. The permissions are `settings.minecraft.view` and `settings.minecraft.update`.
+- Tested with a simulated client against fake Mojang and panel servers for protocol versions from 1.8 up to 1.21, not with the real Mojang session server.
