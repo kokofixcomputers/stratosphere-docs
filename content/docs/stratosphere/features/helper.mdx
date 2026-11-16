@@ -9,11 +9,15 @@ The **Stratosphere helper** is what connects the panel to the running server. It
 
 | Jar | For | Needs |
 |---|---|---|
-| `Stratosphere.jar` | Paper, Spigot, Purpur | — |
+| `Stratosphere.jar` | Paper, Spigot, Purpur, and Velocity | — |
 | `Stratosphere-fabric.jar` | Fabric | Fabric Loader 0.16+ and Fabric API |
 | `Stratosphere-neoforge.jar` | NeoForge | NeoForge 21.1+ |
 
 Place the plugin jar in the server's `plugins` folder, and a mod jar in the `mods` folder. The mods support Minecraft **1.21.1** and **26.x** (26.1 and newer); the shipped jars are checked on 1.21.1, 26.2 and 26.3. Fabric and NeoForge need **Java 21** on 1.21.1 and **Java 25** on 26.x. Every jar is Java 21 bytecode, so it loads on Java 21 as well as 25. On a Minecraft version the mod does not support, it says so in the log and leaves the server alone.
+
+### On a Velocity proxy
+
+The same `Stratosphere.jar` is a Velocity plugin too (put it in the proxy's `plugins` folder, the panel does it when it installs Velocity). On a proxy it only does two things: it tells the panel **who is connected and which backend server each player is on**, and it lists the commands of the proxy for tab completion. There is no inventory, health, TPS or world on a proxy. The log of a Velocity proxy does not say who is connected, so without the plugin the [Players page](/docs/stratosphere/features/players) of a proxy offers to install it.
 
 <Callout type="info" title="The panel installs it for you">
 When the panel installs Fabric or NeoForge, it also puts the matching helper mod in the `mods` folder and keeps it up to date. When the version differs from the one the panel ships with, it offers to update it.

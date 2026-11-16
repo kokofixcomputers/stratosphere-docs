@@ -5,6 +5,10 @@ description: Manage operators and the whitelist, and open a player's inventory, 
 
 The **Players** tools cover both who may join and what an online player is carrying. Operators and the whitelist are managed from the console page; the player window shows the rest.
 
+## On a proxy
+
+A Velocity proxy has a **Players** page of its own: everybody who is connected, with their head, and the backend server they are on (a player who is still connecting says so). The chips above the list count the players per server and filter by it. There are no inventories, vitals or operator lists on a proxy. It needs the [helper plugin](/docs/stratosphere/features/helper) on the proxy.
+
 ## Operators & whitelist
 
 From the console page you can manage the server's operator and whitelist lists. These are the familiar `ops.json` and `whitelist.json` files, shown with **player heads**, so you add or remove a player without editing JSON by hand.
