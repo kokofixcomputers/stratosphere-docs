@@ -7,9 +7,9 @@ description: Make boxes for people, sell boxes and servers with Stripe or PayPal
 
 ## Boxes
 
-**Admin > Boxes** (below Servers) lists every box with its owner, servers and use. **Create a box** gives a person a box without a payment: owner, name, memory, disk, CPU, ports, backups, databases, a node (or any node with room) and optionally how many days it lasts.
+**Admin > Boxes** (below Servers) lists every box with its owner, servers and use. **Create new** opens a page (like creating a server) and gives a person a box without a payment: owner, name, memory, disk, CPU, ports, backups, databases, a node (or any node with room) and optionally how many days it lasts.
 
-Open a box to:
+Open a box (tabs About, Details, Servers, Manage and Delete) to:
 
 - change its size (it can not be smaller than what its servers have been given), its node, its notes and when it runs out (+30, +90, +365 days);
 - **suspend** it, which stops and locks every server in it, and let it run again;
@@ -43,7 +43,7 @@ The address people come back to is never believed. The panel asks Stripe or PayP
 
 ## Orders
 
-**Admin > Orders** shows what was bought, with its status. An order that was paid but could not be made (no port free on the node, for example) says why and has **Set up now**. **Refund** gives the money back through the service, and can also suspend what was bought.
+**Admin > Orders** shows what was bought, with its status. A payment can be for several things (the cart): the order lists every box and server on it, and what could not be made keeps its own reason while the rest stays made. An order that was paid but could not be made (no port free on the node, for example) says why and has **Set up now**. **Refund** gives the money back through the service, and can also suspend what was bought.
 
 ## Running out
 
