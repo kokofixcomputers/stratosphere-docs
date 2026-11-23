@@ -1,0 +1,56 @@
+---
+title: Boxes and the store
+description: Make boxes for people, sell boxes and servers with Stripe or PayPal.
+---
+
+[Boxes](/docs/stratosphere/features/boxes) are resources a person owns and makes servers in. They have **nothing to do with payments**: you can make a box for somebody by hand, and the store is only one way to get one.
+
+## Boxes
+
+**Admin > Boxes** (below Servers) lists every box with its owner, servers and use. **Create a box** gives a person a box without a payment: owner, name, memory, disk, CPU, ports, backups, databases, a node (or any node with room) and optionally how many days it lasts.
+
+Open a box to:
+
+- change its size (it can not be smaller than what its servers have been given), its node, its notes and when it runs out (+30, +90, +365 days);
+- **suspend** it, which stops and locks every server in it, and let it run again;
+- **delete** it: refuse when it has servers, keep the servers as servers of their own, or delete them with it;
+- **Open as the owner sees it**, the same page the owner has (an admin with `boxes.view` may open any box, `boxes.update` also makes and resizes servers in it);
+- see the servers in it, with a link to their admin page.
+
+Servers in a box are not counted in the [resource pool](/docs/stratosphere/admin/resource-pools) or the server limit of their owner, they come out of the box.
+
+Permissions: `boxes.view`, `boxes.create`, `boxes.update`, `boxes.delete`.
+
+## The store
+
+Off by default. **Settings > Payments** has the switch, the currency (a three letter code) and the keys.
+
+### Stripe
+
+Give the secret key and a webhook. In Stripe add the webhook address shown on the page and send it `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` and `charge.refunded`, then paste its signing secret. People pay on Stripe Checkout.
+
+### PayPal
+
+Give the client ID and secret of a PayPal app (use Sandbox to test). The person approves on PayPal and the panel captures the payment when they come back. A webhook ID is optional: with it PayPal also tells the panel about refunds.
+
+### How a payment is trusted
+
+The address people come back to is never believed. The panel asks Stripe or PayPal what happened (and checks the amount and currency), and webhooks are checked (Stripe signs them, PayPal is asked). A payment is made into a box or server once, however many times it is reported.
+
+## Packages
+
+**Admin > Packages**: what is for sale. A package is a **box** or a **server** with memory, disk, CPU, ports, backups and databases, a price, how many days one payment lasts (empty: paid once), a node (or any), for a server the egg it starts from, an order and whether it is for sale. Deleting a package does not touch what was bought.
+
+## Orders
+
+**Admin > Orders** shows what was bought, with its status. An order that was paid but could not be made (no port free on the node, for example) says why and has **Set up now**. **Refund** gives the money back through the service, and can also suspend what was bought.
+
+## Running out
+
+A bought box or server has an end date. The panel checks every ten minutes and **suspends** what ran out (nothing is deleted). Renewing adds the days to what was left (or to today when it ran out) and lets it run again. Boxes made by hand last forever unless you set days.
+
+Permissions: `packages.*`, `orders.view`, `orders.update`, `settings.payments.view`, `settings.payments.update`.
+
+<Callout type="warn" title="Not tried with the real services">
+It was tested against simulated Stripe and PayPal answers, not with real accounts. Try it with Stripe test keys and the PayPal Sandbox before opening the store. Prices are in the smallest unit of the currency (cents). Payments are one per period, there is no automatic recurring charge.
+</Callout>
